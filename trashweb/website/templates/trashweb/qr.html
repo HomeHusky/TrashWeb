@@ -1,0 +1,83 @@
+{% extends "navbar.html" %}
+
+{% load static %}
+
+{% block title %}
+  <title>Smart Trash - Waste Treatment Company</title>
+{% endblock title %}
+
+{% block divheader %}
+    <div class="row py-5">
+        <div class="col-12 pt-lg-5 mt-lg-5 text-center">
+            <h1 class="display-4 text-white animated zoomIn">Tạo Mã QR</h1>
+            <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
+            <i class="far fa-circle text-white px-2"></i>
+            <a href="" class="h5 text-white">Mã QR Của Bạn</a>
+        </div>
+    </div>
+{% endblock divheader %}
+
+    
+{% block content %}
+
+<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+    <a class="btn btn-lg btn-primary rounded" href="{% url 'user' %}">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div class="container py-5">
+        <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
+            <h5 class="fw-bold text-primary text-uppercase">ĐÂY LÀ MÃ QR CỦA BẠN!</h5> 
+        </div>
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-body text-center">
+                            <img src="{{user.customer.Image.url}}" alt="avatar"
+                                class="rounded-circle img-fluid" style="width: 150px;">
+                            <h5 class="my-3">{{user.customer.Name}}</h5>
+                            <p class="text-muted mb-1">Full Stack Developer</p>
+                            <p class="text-muted mb-4">{{current_address}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="card mb-4">
+                        <form action="/send" method="post">
+                            {% csrf_token %}
+                            <div class="user_details">
+                                <div class="input_box">
+                                    <input type="text" name="data" id="entry" >
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <input type="submit" name="data" value="Tạo Mã QR" id="btn" class="btn btn-primary w-100" />
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                {% if data %}
+
+                                <img src="{{MEDIA_URL}}{% static 'images/test.png' %}" alt="no image">
+                                
+                                {% else %}
+                                <h1>Vui Lòng Nhập Dữ Liệu Của Bạn!</h1>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+    <link href="{% static 'css/user.css' %}" rel="stylesheet">
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/activity.js' %}"></script>
+{% endblock script %}

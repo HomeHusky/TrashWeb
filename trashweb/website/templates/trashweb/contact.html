@@ -1,0 +1,102 @@
+{% extends "navbar.html" %}
+
+{% load static %}
+
+{% block divheader %}
+    <div class="row py-5">
+        <div class="col-12 pt-lg-5 mt-lg-5 text-center">
+            <h1 class="display-4 text-white animated zoomIn">Liên Hệ</h1>
+            <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
+            <i class="far fa-circle text-white px-2"></i>
+            <a href="" class="h5 text-white">Liên Hệ</a>
+        </div>
+    </div>
+{% endblock divheader %}
+
+{% block content %}
+
+    
+    {% if message_name %}
+        <center>
+            <h2>Cảm ơn {{message_name}}!</h2>
+            <p>Chúng tôi đã nhận được email của bạn và sẽ phản hồi ngay...</p>
+        </center>
+    {% endif %}
+    <br/><br/><br/>
+    <!-- Contact Start -->
+    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
+                <h5 class="fw-bold text-success text-uppercase">Liên Hệ Với Chúng Tôi</h5>
+                <h1 class="mb-0">Nếu Bạn Có Bất Kỳ Câu Hỏi Nào, Vui Lòng Liên Hệ Với Chúng Tôi</h1>
+            </div>
+            <div class="row g-5 mb-5">
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center wow fadeIn" data-wow-delay="0.1s">
+                        <div class="bg-success d-flex align-items-center justify-content-center rounded" style="width: 60px; height: 60px;">
+                            <i class="fa fa-phone-alt text-white"></i>
+                        </div>
+                        <div class="ps-4">
+                            <h5 class="mb-2">Gọi Để Hỏi Bất Kỳ Câu Hỏi Nào</h5>
+                            <h4 class="text-success mb-0">+84 919 562 182</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center wow fadeIn" data-wow-delay="0.4s">
+                        <div class="bg-success d-flex align-items-center justify-content-center rounded" style="width: 60px; height: 60px;">
+                            <i class="fa fa-envelope-open text-white"></i>
+                        </div>
+                        <div class="ps-4">
+                            <h5 class="mb-2">Email Của Chúng Tôi</h5>
+                            <h4 class="text-success mb-0">trannhatvi1@dtu.edu.vn</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center wow fadeIn" data-wow-delay="0.8s">
+                        <div class="bg-success d-flex align-items-center justify-content-center rounded" style="width: 60px; height: 60px;">
+                            <i class="fa fa-map-marker-alt text-white"></i>
+                        </div>
+                        <div class="ps-4">
+                            <h5 class="mb-2">Ghé Thăm Văn Phòng Của Chúng Tôi</h5>
+                            <h4 class="text-success mb-0">03 Quang Trung, Đà Nẵng, Việt Nam</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-5">
+                <div class="col-lg-6 wow slideInUp" data-wow-delay="0.3s">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input name="message-name" type="text" class="form-control border-0 bg-light px-4" placeholder="Tên Của Bạn" style="height: 55px;">
+                            </div>
+                            <div class="col-md-6">
+                                <input name="message-email" type="email" class="form-control border-0 bg-light px-4" placeholder="Email Của Bạn" style="height: 55px;">
+                            </div>
+                            <div class="col-12">
+                                <input type="text" class="form-control border-0 bg-light px-4" placeholder="Đối Tượng" style="height: 55px;">
+                            </div>
+                            <div class="col-12">
+                                <textarea name="message" class="form-control border-0 bg-light px-4 py-3" rows="4" placeholder="Tin Nhắn"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button" class="btn btn-success w-100 py-3 type="submit">Gửi Phản Hồi</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-6 wow slideInUp" data-wow-delay="0.6s">
+                    <iframe class="position-relative rounded w-100 h-100"
+                        src="https://www.google.com/maps/place/3+Quang+Trung,+Th%E1%BA%A1ch+Thang,+H%E1%BA%A3i+Ch%C3%A2u,+%C4%90%C3%A0+N%E1%BA%B5ng+550000,+Vi%E1%BB%87t+Nam/@16.074729,108.220205,17z/data=!3m1!4b1!4m6!3m5!1s0x314218307c52d95f:0x3600ad8919e0f83f!8m2!3d16.0747239!4d108.2227853!16s%2Fg%2F11gphvp6v6"
+                        frameborder="0" style="min-height: 350px; border:0;" allowfullscreen="" aria-hidden="false"
+                        tabindex="0"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Contact End -->
+
+
+{% endblock content %}

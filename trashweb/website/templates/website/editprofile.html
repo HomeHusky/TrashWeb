@@ -1,0 +1,72 @@
+{% extends "basecourseweb.html" %}
+
+{% load static %}
+
+{% block title %}
+  <title>Smart Trash - Waste Treatment Company</title>
+{% endblock title %}
+
+{% block text1 %}
+    <h1 class="text-white display-1">User</h1>
+{% endblock text1 %}
+
+{% block divheader %}
+    <div class="d-inline-flex text-white mb-5">
+        <p class="m-0 text-uppercase"><a class="text-white" href="{% url 'index' %}">Home</a></p>
+        <i class="fa fa-angle-double-right pt-1 px-3"></i>
+        <p class="m-0 text-uppercase">User</p>
+    </div>
+{% endblock divheader %}
+
+    
+{% block content %}
+    <link href="{% static 'css/user.css' %}" rel="stylesheet">
+    <!-- User Start -->
+    <div class="container">
+        <div class="row">
+                <div class="col-12">
+                    <!-- Page title -->
+                    <div class="my-5">
+                        <h3>My Profile</h3>
+                        <hr>
+                    </div>
+                    <!-- Form START -->
+                    {% if submitted %}
+                        You Was Sumitted Succefully!!!
+                    {% else %}
+                        <form action="" method=POST>
+                            
+                            {% csrf_token %}
+
+                            {{ form.as_p }}
+
+                            <input type="submit" value="Submit" class="btn btn_secondary">
+                        </form>
+                    {% endif %}
+                    
+                </div>
+            </div>
+            </div>
+    <!-- User End -->
+
+    <!--Chart  -->
+    <div class="box">
+        <div class="chart">
+            <h3>
+                Day/Week</h3>
+            <canvas id="myChart" style="width:100%;max-width:800px"></canvas>
+        </div>
+        <div class="chart">
+            <h3>Month/Year</h3>
+            <canvas id="myChart2" style="width:100%;max-width:800px;" ></canvas>
+        </div>
+        
+       
+    </div>
+    <!-- End Chart -->
+
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/activity.js' %}"></script>
+{% endblock script %}

@@ -1,0 +1,48 @@
+{% extends "navbar.html" %}
+
+{% load static %}
+
+{% block divheader %}
+    <div class="row py-5">
+        <div class="col-12 pt-lg-5 mt-lg-5 text-center">
+            <h1 class="display-4 text-white animated zoomIn">Khuyến Mãi</h1>
+            <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
+            <i class="far fa-circle text-white px-2"></i>
+            <a href="" class="h5 text-white">Khuyến Mãi</a>
+        </div>
+    </div>
+{% endblock divheader %}
+    
+    
+{% block content %}
+
+<!-- Voucher Start -->
+<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+    <div class="container py-5">
+        <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
+            <h5 class="fw-bold text-success text-uppercase">Promotion</h5>
+            <h1 class="mb-0">Sử dụng điểm của bạn để đổi phiếu mua hàng hấp dẫn của bạn</h1>
+        </div>
+        <div class="row g-5">
+            {% for voucher in object_list  %}
+            <div class="col-lg-4 wow slideInUp zoomIn" data-wow-delay="0.3s">
+                <div class="service-item bg-light rounded d-flex flex-column align-items-center justify-content-center text-center">
+                    <div class="team-img position-relative overflow-hidden">
+                        <img class="img-fluid w-100" src="{{voucher.author.Image.url}}" alt="">
+                    </div>
+                    <div class="text-center py-4">
+                        <h4 class="text-success">{{voucher.title}}</h4>
+                        <p class="text-uppercase m-0">{{voucher.author.Name}}</p>
+                    </div>
+                    <a class="btn btn-lg btn-success rounded" href="{% url 'voucher_detail' voucher.pk %}">
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Voucher End -->
+
+{% endblock content %}

@@ -1,0 +1,194 @@
+{% extends "navbar.html" %}
+
+{% load static %}
+
+{% block title %}
+  <title>Smart Trash - Waste Treatment Company</title>
+{% endblock title %}
+
+{% block divheader %}
+    <div class="row py-5">
+        <div class="col-12 pt-lg-5 mt-lg-5 text-center">
+            <h1 class="display-4 text-white animated zoomIn">Hồ Sơ Người Dùng</h1>
+            <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
+            <i class="far fa-circle text-white px-2"></i>
+            <a href="" class="h5 text-white">Hồ Sơ Người Dùng</a>
+        </div>
+    </div>
+{% endblock divheader %}
+
+    
+{% block content %}
+
+<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+  <div class="container py-5">
+      <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
+          <h5 class="fw-bold text-success text-uppercase">Chi Tiết Người Dùng</h5>
+          <h1 class="mb-0">Thông Tin Và Hồ Sơ Của Bạn</h1>
+      </div>
+      
+      <div class="container py-5">
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="card mb-4">
+              <div class="card-body text-center">
+                <img src="{{user.customer.Image.url}}" alt="avatar"
+                  class="rounded-circle img-fluid" style="width: 150px;">
+                <h5 class="my-3">{{user.customer.Name}}</h5>
+                <p class="text-muted mb-1">User</p>
+                <p class="text-muted mb-4">{{current_address}}</p>
+                <div class="d-flex justify-content-center mb-2">
+                  <a href="{% url 'voucher' %}" type="button" class="btn btn-success">Trao Đổi Quà</a>
+                  <a href="{% url 'update' %}" type="button" class="btn btn-outline-success ms-1">Chỉnh Sửa Hồ Sơ</a>
+                  <a href="{% url 'qr' %}" type="button" class="btn btn-outline-success ms-1">Lấy Mã QR Của Bạn</a>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-4 mb-lg-0">
+              <div class="card-body p-0">
+                <ul class="list-group list-group-flush rounded-3">
+                  <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                    <i class="fab fa-twitter fa-lg" style="color: #55acee;"></i>
+                    <p class="mb-0">{{user.customer.Twitter}}</p>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                    <i class="fab fa-instagram fa-lg" style="color: #ac2bac;"></i>
+                    <p class="mb-0">{{user.customer.Instagram}}</p>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                    <i class="fab fa-facebook-f fa-lg" style="color: #3b5998;"></i>
+                    <p class="mb-0">{{user.customer.Facebook}}</p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            </br>
+            <h2 class="text-center">Voucher Hiện Có</h2>
+            <div class="card mb-4 mb-lg-0">
+              <div class="card-body p-0">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Đối tác</th>
+                      <th scope="col">Code</th>
+                    </tr>
+                  </thead>
+                  
+                  <tbody>
+                    {% for list in customerVouchers %}
+                    <tr>
+                      <td scope="row">{{list.Voucher_id_id}}</td>
+                      <td scope="row">{{list.GenerateCode}}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <div class="card mb-4">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-3">
+                    <p class="mb-0">Tên Đầy Đủ</p>
+                  </div>
+                  <div class="col-sm-9">
+                    <p class="text-muted mb-0">{{user.customer.Name}}</p>
+                  </div>
+                </div>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                    <p class="mb-0">Mã số</p>
+                  </div>
+                  <div class="col-sm-9">
+                    <p class="text-muted mb-0">{{user.customer.id}}</p>
+                  </div>
+                </div>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                    <p class="mb-0">Email</p>
+                  </div>
+                  <div class="col-sm-6">
+                    <p class="text-muted mb-0">{{user.customer.Email}}</p>
+                  </div>
+                  <div class="col-sm-3">
+                    <a href="{% url 'token' %}" type="button" class="btn btn-success btn-sm">Verify</a>
+                  </div>
+                </div>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                    <p class="mb-0">Số Điện Thoại</p>
+                  </div>
+                  <div class="col-sm-9">
+                    <p class="text-muted mb-0">{{user.customer.Phone}}</p>
+                  </div>
+                </div>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                    <p class="mb-0">Tổng Điểm</p>
+                  </div>
+                  <div class="col-sm-9">
+                    <p class="text-muted mb-0">{{user.customer.point}}</p>
+                  </div>
+                </div>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                    <p class="mb-0">Địa Chỉ</p>
+                  </div>
+                  <div class="col-sm-9">
+                    <p class="text-muted mb-0">{{user.customer.Address}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <h1 class="text-center">Hoạt Động Vứt Rác</h1>
+              <div class="col-md-12">
+                <div class="card mb-4 mb-md-0">
+                  <div class="card-body">
+                      <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Ngày Vứt Rác</th>
+                              <th scope="col">Số Loại</th>
+                              <th scope="col">Tổng Điểm</th>
+                              <th scope="col"></th>
+                            </tr>
+                          </thead>
+                          
+                          <tbody>
+                            {% for list in trashlists %}
+                            <tr>
+                              <td scope="row">{{list.createat}}</td>
+                              <td scope="row">{{list.numoftrash}}</td>
+                              <td scope="row">{{list.totalscore}}</td>
+                              <td scope="row">
+                                <a href="{% url 'trash_detail' list.pk %}" type="button" class="btn btn-success btn-sm">Verify</a>
+                              </td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                          
+                          
+                        </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  </div>
+  </div>
+    <link href="{% static 'css/user.css' %}" rel="stylesheet">
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/activity.js' %}"></script>
+{% endblock script %}

@@ -1,0 +1,56 @@
+{% extends "navbar.html" %}
+
+{% load static %}
+
+{% block title %}
+  <title>Smart Trash - Waste Treatment Company</title>
+{% endblock title %}
+
+{% block text1 %}
+    <h1 class="text-white display-1">Người Dùng</h1>
+{% endblock text1 %}
+
+{% block divheader %}
+    <div class="d-inline-flex text-white mb-5">
+        <p class="m-0 text-uppercase"><a class="text-white" href="{% url 'index' %}">Trang Chủ</a></p>
+        <i class="fa fa-angle-double-right pt-1 px-3"></i>
+        <p class="m-0 text-uppercase">Người Dùng</p>
+    </div>
+{% endblock divheader %}
+
+    
+{% block content %}
+    <link href="{% static 'css/user.css' %}" rel="stylesheet">
+    <!-- User Start -->
+    <div class="container">
+        <div class="row">
+                <div class="col-12">
+                    <!-- Page title -->
+                    <div class="my-5">
+                        <h3>Cập Nhập Hồ Sơ</h3>
+                        <hr>
+                    </div>
+                    <!-- Form START -->
+                    {% if submitted %} Bạn đã cập nhật thành công!!!
+                    {% else %}
+                        <form action="" method=POST>
+                            
+                            {% csrf_token %}
+
+                            {{ form.as_p }}
+                            <br/>
+                            
+                            <input type="submit" value="Update" class="btn btn-block btn-secondary py-3 px-5">
+                        </form>
+                    {% endif %}
+                    
+                </div>
+            </div>
+            </div>
+    <!-- User End -->
+
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/activity.js' %}"></script>
+{% endblock script %}

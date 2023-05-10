@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+  Sleep Detect Live
+{% endblock title %}
+
+{% block content %}
+<h1>Sleep Detect Live</h1>
+<p id="display">Value của sleep</p>
+{% endblock content %}
+
+<!-- NEW -->
+{% block scripts %}
+    <script>
+
+    </script>
+	<script>
+        $(document).ready(function(){
+            function setVar(variable) {
+                $.ajax({
+                    type:'GET',
+                    url: "{% url 'setVarFalse' %}",
+                    success: function(response){
+                        console.log("Set Var to False Success!")
+                    },
+                    error: function(response){
+                        console.log(response)
+                    }
+                })
+            }
+            setInterval(function()
+            {
+                $.ajax({
+                    type:'GET',
+                    url: "{% url 'getVar' %}",
+                    success: function(response){
+                        $("#display").empty();
+                        for(var key in response.vars){
+
+                            console.log(response.vars[key].id_var);
+                            console.log("Giá trị value là: " + response.vars[key].first_name)
+                            console.log(response.vars[key].first_name)
+                            var temp=response.vars[key].first_name;
+                            if(temp==true){
+                                alert("Bạn có vẻ buồn ngủ! Bạn nên đi rửa mặt để tiếp tục!")
+                                setVar()
+                            }
+                            $("#display").append(temp);
+                            
+                        }
+                    },
+                })
+            },2500);
+        });
+    </script>
+{% endblock scripts %}
