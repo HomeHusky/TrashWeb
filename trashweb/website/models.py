@@ -108,12 +108,8 @@ class CustomerVouchers(models.Model):
     
 class TrashDetail(models.Model):
     id = IntegerField(primary_key=True, unique=True, editable=False)
-    cardboard = models.IntegerField(null=True)
+    recycle = models.IntegerField(null=True)
     dangerous = models.IntegerField(null=True)
-    glass = models.IntegerField(null=True)
-    metal = models.IntegerField(null=True)
-    paper = models.IntegerField(null=True)
-    plastic = models.IntegerField(null=True)
     othergarbage = models.IntegerField(null=True)
     description = models.CharField(max_length=300, null=True)
     iduser = models.OneToOneField(Customer, null=True, on_delete=models.CASCADE)
@@ -126,7 +122,7 @@ class TrashDetail(models.Model):
         super(TrashDetail, self).save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.Trash_list_id)
+        return str(self.id)
 
 class TrashList(models.Model):
     id = IntegerField(primary_key=True, unique=True, editable=False)
@@ -145,7 +141,7 @@ class TrashList(models.Model):
         super(TrashList, self).save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.IdUser.Name)
+        return str(self.iduser.Name)
     
     def getTotalScore(self):
         return self.TotalScore
