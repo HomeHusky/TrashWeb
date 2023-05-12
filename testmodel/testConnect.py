@@ -4,12 +4,15 @@ import json
 import os
 import time
 import threading
+import io
+from PIL import Image
+
 
 send_str = ""
 send_list =""
 
 # Địa chỉ IP và cổng của server C#
-TCP_IP = '192.168.100.29'
+TCP_IP = '192.168.1.19'
 TCP_PORT = 5565
 
 # Tạo socket và kết nối đến server C#
@@ -23,7 +26,7 @@ def sendstr():
 
     
     # Mã hóa ảnh thành chuỗi base64
-    with open('img/team-31.jpg', 'rb') as f:
+    with open('img/recycle-symbol.png', 'rb') as f:
         image_data = base64.b64encode(f.read()).decode('utf-8')
 
     # Đóng gói ảnh và chuỗi string vào một đối tượng JSON
@@ -35,21 +38,21 @@ def sendstr():
 
     # Gửi dữ liệu ảnh đến server
     # s.send(json_data.encode())
-    string_data = '[1, 2, 3]'
+    string_data = [1, 2, 3]
     s.sendall(json_data.encode())
     print(json_data.encode())
     
-def sendlist(response):
-    if response == "sendlist":
-        # Lấy danh sách tên file ảnh trong thư mục
-        image_folder = 'img'
-        image_files = [f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')]
-
-        # Gửi danh sách tên file ảnh đến server
-        message = '\n'.join(image_files)
-        s.sendall(message.encode())
-    else: pass
-
+def sendlist():
+    print("sending")
+    # Lấy danh sách tên file ảnh trong thư mục
+    IMAGE_DIR = 'images'
+    for file in os.listdir(IMAGE_DIR):
+        if file.endswith(".jpg") or file.endswith(".png"):
+            with open(os.path.join(IMAGE_DIR, file), "rb") as f:
+                image_bytes = base64.b64encode(f.read())
+                print(image_bytes)
+                s.sendall(image_bytes)
+    
 def runClient():
     while True:
         data_recv = s.recv(1024)
@@ -65,6 +68,7 @@ def runClient():
         time.thread_time
         
 
-thread1 = threading.Thread(target=runClient())
-thread1.start()
+sendlist()
+# thread1 = threading.Thread(target=sendlist())
+# thread1.start()
 

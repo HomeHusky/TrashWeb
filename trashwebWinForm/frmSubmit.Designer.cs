@@ -33,14 +33,18 @@
             this.btnEdit = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnDone = new System.Windows.Forms.Button();
             this.btnLeft = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnNext = new System.Windows.Forms.Button();
+            this.btnPrev = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel4.SuspendLayout();
+            this.panel3.SuspendLayout();
+            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -61,9 +65,9 @@
             this.panel5.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.panel5.Controls.Add(this.btnEdit);
             this.panel5.Controls.Add(this.label7);
-            this.panel5.Location = new System.Drawing.Point(135, 324);
+            this.panel5.Location = new System.Drawing.Point(0, 324);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(475, 81);
+            this.panel5.Size = new System.Drawing.Size(700, 81);
             this.panel5.TabIndex = 4;
             // 
             // btnEdit
@@ -74,7 +78,7 @@
             this.btnEdit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnEdit.Font = new System.Drawing.Font("Segoe UI Semilight", 11.25F);
             this.btnEdit.ForeColor = System.Drawing.Color.Transparent;
-            this.btnEdit.Location = new System.Drawing.Point(316, 16);
+            this.btnEdit.Location = new System.Drawing.Point(429, 16);
             this.btnEdit.Name = "btnEdit";
             this.btnEdit.Size = new System.Drawing.Size(126, 43);
             this.btnEdit.TabIndex = 98;
@@ -95,36 +99,28 @@
             // 
             // panel4
             // 
-            this.panel4.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.panel4.Controls.Add(this.pictureBox1);
-            this.panel4.Location = new System.Drawing.Point(135, 0);
+            this.panel4.Location = new System.Drawing.Point(242, 63);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(475, 324);
+            this.panel4.Size = new System.Drawing.Size(255, 255);
             this.panel4.TabIndex = 3;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(475, 324);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
             // 
             // panel3
             // 
             this.panel3.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.panel3.Location = new System.Drawing.Point(610, 0);
+            this.panel3.Controls.Add(this.btnNext);
+            this.panel3.Location = new System.Drawing.Point(577, 0);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(90, 405);
+            this.panel3.Size = new System.Drawing.Size(123, 318);
             this.panel3.TabIndex = 2;
             // 
             // panel2
             // 
             this.panel2.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.panel2.Controls.Add(this.btnPrev);
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(135, 405);
+            this.panel2.Size = new System.Drawing.Size(128, 318);
             this.panel2.TabIndex = 1;
             // 
             // btnDone
@@ -141,7 +137,7 @@
             this.btnDone.TabIndex = 86;
             this.btnDone.Text = "Xác Nhận";
             this.btnDone.UseVisualStyleBackColor = false;
-            this.btnDone.Click += new System.EventHandler(this.btnDone_Click);
+            this.btnDone.Click += new System.EventHandler(this.BtnDone_Click);
             // 
             // btnLeft
             // 
@@ -157,7 +153,47 @@
             this.btnLeft.TabIndex = 88;
             this.btnLeft.Text = "Bỏ Qua";
             this.btnLeft.UseVisualStyleBackColor = false;
-            this.btnLeft.Click += new System.EventHandler(this.btnLeft_Click);
+            this.btnLeft.Click += new System.EventHandler(this.BtnLeft_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(27, 35);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(208, 187);
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
+            // 
+            // btnNext
+            // 
+            this.btnNext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(153)))), ((int)(((byte)(76)))));
+            this.btnNext.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnNext.FlatAppearance.BorderSize = 0;
+            this.btnNext.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNext.Font = new System.Drawing.Font("Segoe UI Semilight", 11.25F);
+            this.btnNext.ForeColor = System.Drawing.Color.Transparent;
+            this.btnNext.Location = new System.Drawing.Point(0, 0);
+            this.btnNext.Name = "btnNext";
+            this.btnNext.Size = new System.Drawing.Size(123, 318);
+            this.btnNext.TabIndex = 90;
+            this.btnNext.Text = "Tiếp tục";
+            this.btnNext.UseVisualStyleBackColor = false;
+            this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
+            // 
+            // btnPrev
+            // 
+            this.btnPrev.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(153)))), ((int)(((byte)(76)))));
+            this.btnPrev.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnPrev.FlatAppearance.BorderSize = 0;
+            this.btnPrev.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPrev.Font = new System.Drawing.Font("Segoe UI Semilight", 11.25F);
+            this.btnPrev.ForeColor = System.Drawing.Color.Transparent;
+            this.btnPrev.Location = new System.Drawing.Point(0, 0);
+            this.btnPrev.Name = "btnPrev";
+            this.btnPrev.Size = new System.Drawing.Size(128, 318);
+            this.btnPrev.TabIndex = 90;
+            this.btnPrev.Text = "Quay lại";
+            this.btnPrev.UseVisualStyleBackColor = false;
+            this.btnPrev.Click += new System.EventHandler(this.btnPrev_Click);
             // 
             // frmSubmit
             // 
@@ -175,6 +211,8 @@
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
             this.panel4.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
@@ -187,10 +225,12 @@
         private System.Windows.Forms.Button btnLeft;
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btnEdit;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button btnNext;
+        private System.Windows.Forms.Button btnPrev;
     }
 }

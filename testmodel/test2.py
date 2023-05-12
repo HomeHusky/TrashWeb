@@ -1,71 +1,73 @@
+import os
+import socket
 import socket
 import base64
 import json
 import os
 import time
 import threading
+import io
+from PIL import Image
+import time
 
-class ModelTrash:
-    def __init__(self):
-        self.data = {
-                    'Recycle': 1,
-                    'Dangerous': 2,
-                    'Other Garbage': 3,
-                    }
-        self.create_folder = 0
-        self.save_images = 0
-        self.data_recv = ""
+TCP_IP = '192.168.1.95'
+TCP_PORT = 5565
+
+# Connect to the server
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((TCP_IP, TCP_PORT))
+start = time.time()
+run = True
+
+response = ''
+while (run):
+    if (time.time() - start)>=6:
+        run = False
+
+    # Mã hóa ảnh thành chuỗi base64
+    with open('img/blog-1.jpg', 'rb') as f:
+        image_data = base64.b64encode(f.read()).decode('utf-8')
+
+    # Đóng gói ảnh và chuỗi string vào một đối tượng JSON
+    data = {
+        'image': image_data,
+        'string_data': '[12, 2, 3]'
+    }
+    json_data = json.dumps(data)
+
+    # Gửi dữ liệu ảnh đến server
+    # s.send(json_data.encode())
+    # while(True):
+        # Wait for the response from the server
+
+    response = s.recv(1024)
+    print(response.decode())
+    # if response == b'Start':
+    print("sending")
+    print(json_data.count)
+    s.sendall(json_data.encode())
         
-    def update_trash_list(self, name): 
-        """
-        This function updates the count of a specific item in a trash list.
-        
-        :param name: The name of the item that needs to be updated in the trash list
-        """
-        self.data[name] += 1
+        # elif response == b'Ready to receive data' :
+        #      # Send a list of images to the server
+        #     image_dir = 'images'
+        #     image_files = [os.path.join(image_dir, f) for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f))]
+        #     s.sendall(str(len(image_files)).encode())
+        #     for image_file in image_files:
+        #         with open(image_file, 'rb') as f:
+        #             # Load the image using Pillow
+        #             img = Image.open(io.BytesIO(f.read()))
 
-    def get_values(self):
-        """
-        This function returns a list of all the values in a dictionary.
-        :return: The function `get_values` is returning a list of all the values in the dictionary
-        `self.data`.
-        """
-        list_temp = []
-        for value in self.data.values():
-            list_temp.append(value)
-        return list_temp
-    
-    # def run_predict(self):
-        
+        #             # Convert the image to byte array
+        #             img_byte_arr = io.BytesIO()
+        #             img.save(img_byte_arr, format='JPEG')
+        #             img_byte_arr = img_byte_arr.getvalue()
 
-    def data_server(self, data):
-        host2 = '192.168.1.7'
-        port2 = 5565
-        # send data to next server
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((host2, port2))
-            print("Connect success!")
-            s.sendall(str(data).encode())
-            data_recv = s.recv(1024)
-            if len(data_recv):
-                response = data_recv.decode()
-                self.data_recv = response
-                print("Receive from server >> ", response)
-                if response == "sendstring":
-                    s.sendall(str(data).encode())
-                elif response == "sendlist":
-                    s.send(str("sendlist").encode())
-                elif response == "Delete":    
-                    pass
-                else:
-                    pass
-                print(data_recv, "\n", self.save_images,"\n=========\n")
+        #             # Send the length of the image and the image data to the server
+        #             s.sendall(str(len(img_byte_arr)).encode())
+        #             s.sendall(img_byte_arr)
+        # elif response != b'Stop' :
+            # Close the connection
+    if response == b'Stop':
+        s.close()
 
-    def start_server(self):
-        while True:
-            print("=======================================")
-            list_temp = self.get_values()
-            self.data_server(list_temp)
-            time.sleep(1)
 
-ModelTrash.start_server(self=None)

@@ -7,41 +7,202 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace trashwebWinForm
 {
     public partial class frmMain : Form
     {
+
         // Tạo biến để set cho form đi tiếp hay lùi lại
         public bool leaveEdit;
 
-        // Tạo biến để nhận chuỗi hoặc ảnh
-        private bool recv_str_img = true;
-        private bool recv_list_img = false;
-        private bool sendString = false;
-        private bool sendList = false;
+        // Tạo biến image mới để lưu dữ liệu ảnh từ client để luồng chính có thể set pictureBox
+        System.Drawing.Image currentImage = null;
+
 
         // Tạo 3 biến lưu giá trị của rác
         public int countRecycle = 0;
         public int countDangerous = 0;
         public int countOther = 0;
 
-        private string message;
+        //Tạo listImage để lưu ảnh
+        public ImageList imageList = new ImageList();
 
-        //Khởi tạo biến xác nhận đã connect với client
-        private bool client_connected = false;
+        private string message = "Start";
 
         // Khởi tạo server
-        TcpListener server;
-        TcpClient client;
+        private readonly Thread receiveThread;
+
+        private TcpListener _tcpListener;
+        //Khởi tạo biến xác nhận đã connect với client
+        private bool _isListening = false;
+        private bool _isStarted = false;
+        private bool stopRecv = false;
+        private readonly string _jsonFolderPath = "D:\\GitTrashWeb\\trashwebWinForm\\json\\";
+
         public frmMain()
         {
             InitializeComponent();
+            // Start the receive thread
+            receiveThread = new Thread(Start_Server);
+            receiveThread.Start();
+        }
+
+        private async void Start_Server()
+        {
+            if (_isListening)
+            {
+                return;
+            }
+
+            _isListening = true;
+
+            //Khởi tạo TcpListener lắng nghe kết nối từ client
+            IPAddress ipAddress = IPAddress.Parse("192.168.1.95");
+            _tcpListener = new TcpListener(ipAddress, 5565);
+            _tcpListener.Start();
+            Console.WriteLine(ipAddress.ToString() + " Started!");
+
+            
+            while (_isListening)
+            {
+                TcpClient client = await _tcpListener.AcceptTcpClientAsync();
+                Console.WriteLine("Client connected!");
+                await Task.Run(() => ProcessClient(client));
+            }
+        }
+
+        private async Task ProcessClient(TcpClient client)
+        {
+            
+            using (client)
+            {
+                ReceiveData(client);
+            }
+            
+        }
+
+        private void Load_Json()
+        {
+            stopRecv = true;
+
+            _isListening = false;
+            string[] jsonFiles = Directory.GetFiles(_jsonFolderPath, "*.json");            
+
+            // Đặt kích thước hình ảnh mặc định
+            imageList.ImageSize = new Size(255, 255);
+
+            foreach (string jsonFile in jsonFiles)
+            {
+                // Lấy hình ảnh từ file JSON và chuyển đổi thành đối tượng Image
+                string jsonString = File.ReadAllText(jsonFile);
+                //dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonString);
+                //string imageBase64String = obj.image;
+                //byte[] imageBytes = Convert.FromBase64String(imageBase64String);
+                //MemoryStream ms = new MemoryStream(imageBytes);
+                //System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
+
+                //// Thêm hình ảnh vào ImageList
+                //this.imageList.Images.Add(image);
+                // Giải mã chuỗi JSON và truy cập các thuộc tính
+                JsonDocument doc = JsonDocument.Parse(jsonString);
+                JsonElement root = doc.RootElement;
+                string image_data = root.GetProperty("image").GetString();
+
+                // Lấy ảnh từ dữ liệu nhận được và hiển thị trên pictureBox
+                byte[] imgData = Convert.FromBase64String(image_data);
+                using (MemoryStream ms = new MemoryStream(imgData))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
+                    this.imageList.Images.Add(image);
+                }
+
+
+            }
+            Console.WriteLine("Imagelist.count = " + imageList.Images.Count);
+        }
+
+        private void ReceiveData(TcpClient client)
+        {
+            if (stopRecv == true)
+            {
+                message = "Stop";
+                stopRecv = false;
+            }
+            
+            try
+            {
+                // Accept a client connection
+                NetworkStream stream = client.GetStream();
+                // Send a response to the client to notify that the server is ready to receive data
+                
+                byte[] response = Encoding.ASCII.GetBytes(message);
+                Console.WriteLine($"Send data: {response}");
+                stream.Write(response, 0, response.Length);
+                _isStarted = true;
+
+
+                // Nhận dữ liệu từ client và giải mã chuỗi JSON
+                StringBuilder sb = new StringBuilder();
+                byte[] buffer = new byte[1024];
+                int bytesRead = 0;
+                while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    sb.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+
+                }
+                Console.WriteLine(sb.Length);
+
+                if (sb.Length > 0)
+                {
+                    string json_data = sb.ToString();
+
+                    // Giải mã chuỗi JSON và truy cập các thuộc tính
+                    JsonDocument doc = JsonDocument.Parse(json_data);
+                    JsonElement root = doc.RootElement;
+                    string image_data = root.GetProperty("image").GetString();
+                    string str_data = root.GetProperty("string_data").GetString();
+
+                    // Lấy ảnh từ dữ liệu nhận được và hiển thị trên pictureBox
+                    byte[] imgData = Convert.FromBase64String(image_data);
+                    using (MemoryStream ms = new MemoryStream(imgData))
+                    {
+                        System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
+                        currentImage = image;
+                    }
+
+                    // Lấy chuỗi string từ dữ liệu nhận được và hiển thị trong một MessageBox
+                    string[] numbers = str_data.Trim('[', ']').Split(',');
+                    countRecycle = int.Parse(numbers[0]);
+                    countDangerous = int.Parse(numbers[1]);
+                    countOther = int.Parse(numbers[2]);
+
+                    setVisual();
+
+                    string jsonString = sb.ToString();
+                    string fileName = DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".json";
+                    string filePath = Path.Combine(_jsonFolderPath, fileName);
+
+                    File.WriteAllText(filePath, jsonString);
+                    Console.WriteLine(str_data);
+                    client.Close();
+                }
+                
+                
+            }catch
+            {
+                
+            }
+            
+
         }
 
         public void setMove(bool LeaveEdit)
@@ -53,11 +214,6 @@ namespace trashwebWinForm
         private void Main_Load(object sender, EventArgs e)
         {
             FormInit();
-            
-            // Khởi tạo thread riêng để lắng nghe kết nối từ client
-            Thread listenerThread = new Thread(new ThreadStart(ListenForClients));
-            listenerThread.IsBackground = true;
-            listenerThread.Start();
         }
 
         private void FormInit()
@@ -66,139 +222,39 @@ namespace trashwebWinForm
             label7.Text = "";
         }
 
-        private void ListenForClients()
+        // Hàm resize image
+        public static System.Drawing.Image ResizeImage(System.Drawing.Image image, int width, int height)
         {
-            // Khởi tạo TcpListener lắng nghe kết nối từ client
-            IPAddress ipAddress = IPAddress.Parse("192.168.100.29");
-            server = new TcpListener(ipAddress, 5565);
-            client = new TcpClient();
-            server.Start();
-            Console.WriteLine(" >> Server Started");
+            // Tạo bitmap mới với kích thước mới
+            Bitmap bitmap = new Bitmap(width, height);
 
-            while (true)
+            // Tạo đối tượng Graphics từ bitmap mới
+            using (Graphics graphics = Graphics.FromImage(bitmap))
             {
-                client = server.AcceptTcpClient();
-                Console.WriteLine("\n Connect success!");
-                client_connected = true;
-
-                // Tạo một thread mới để xử lý tương tác của client
-                Thread clientThread = new Thread(() =>
-                {
-                    ReceiveStringAndImage(client);
-                   
-                    ReceiveListImage(client);
-                    recv_list_img = false;
-                    
-                });
-                //clientThread.IsBackground = true;
-                clientThread.Start();
+                // Thay đổi kích thước hình ảnh
+                graphics.DrawImage(image, 0, 0, width, height);
             }
+
+            // Trả về hình ảnh mới
+            return bitmap;
         }
 
-        private void SendClient(TcpClient client)
+        //Cross-thread operation not valid: Control '' accessed from a thread other than the thread it was created on.'
+        private void setVisual()
         {
-            if (client_connected)
-            {
-                if (sendString==true)
-                {
-                    SendString(client);
-                    sendString = false;
-                }
-                else if (sendList==true)
-                {
-                    SendList(client);
-                    sendList = false;
-                }
-            }
-        }
-
-        private void ReceiveStringAndImage(TcpClient client)
-        {
-            
-            // Nhận dữ liệu từ client và giải mã chuỗi JSON
-            StringBuilder sb = new StringBuilder();
-            byte[] buffer = new byte[1024];
-            int bytesRead = 0;
-            while ((bytesRead = client.GetStream().Read(buffer, 0, buffer.Length)) > 0)
-            {
-                sb.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-            }
-            string json_data = sb.ToString();
-            dynamic data = JsonSerializer.Deserialize<dynamic>(json_data);
-
-            // Giải mã chuỗi JSON và truy cập các thuộc tính
-            JsonDocument doc = JsonDocument.Parse(json_data);
-            JsonElement root = doc.RootElement;
-            string image_data = root.GetProperty("image").GetString();
-            string str_data = root.GetProperty("string_data").GetString();
-
-            // Lấy ảnh từ dữ liệu nhận được và hiển thị trên pictureBox
-            byte[] imgData = Convert.FromBase64String(image_data);
-            using (MemoryStream ms = new MemoryStream(imgData))
-            {
-                Image image = Image.FromStream(ms);
-                pictureBox1.Image = image;
-                pictureBox1.Refresh();
-            }
-
-            // Lấy chuỗi string từ dữ liệu nhận được và hiển thị trong một MessageBox
-            string[] numbers = str_data.Trim('[', ']').Split(',');
-            countRecycle = int.Parse(numbers[0]);
-            countDangerous = int.Parse(numbers[1]);
-            countOther = int.Parse(numbers[2]);
-            numericUpDown1.Value = countRecycle;
-            numericUpDown2.Value = countDangerous;
-            numericUpDown3.Value = countOther;
-
-            Console.WriteLine(str_data);
-            
+            //Invoke để đồng bộ hóa và có thể chạy được UI
+            this.Invoke((MethodInvoker)delegate {
+                System.Drawing.Image resizedImage = ResizeImage(currentImage, 439, 303);
+                // Set hiển thị image và số rác
+                this.pictureBox1.Image = resizedImage;
+                this.numericUpDown1.Value = countRecycle;
+                this.numericUpDown2.Value = countDangerous;
+                this.numericUpDown3.Value = countOther;
+            });
             
         }
 
-        private void SendString(TcpClient client) 
-        {
-            // Gửi dữ liệu đến client
-            message = "sendstring";
-            byte[] data = Encoding.UTF8.GetBytes(message);
-
-            client.GetStream().Write(data, 0, data.Length);
-        }
-
-        private void SendList(TcpClient client)
-        {
-            // Gửi dữ liệu đến client
-            message = "sendlist";
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            client.GetStream().Write(data, 0, data.Length);
-        }
-
-        private void ReceiveListImage(TcpClient client) 
-        {
-            // Nhận danh sách tên file ảnh
-            StreamReader reader = new StreamReader(client.GetStream());
-            string message = reader.ReadToEnd();
-            string[] imageFiles = message.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Load các ảnh từ file vào List<Image>
-            List<Image> listImage = new List<Image>();
-            foreach (string file in imageFiles)
-            {
-                Image image = Image.FromFile(file);
-                listImage.Add(image);
-            }
-
-
-            // Hiển thị các ảnh trong danh sách lên pictureBox
-            foreach (var image in listImage)
-            {
-                pictureBox1.Image = image;
-                pictureBox1.Refresh();
-                System.Threading.Thread.Sleep(100); // Đợi 1 giây trước khi hiển thị ảnh tiếp theo
-            }
-
-        }
-
-        private void disable()
+        private void Disable()
         {
             pictureBox1.Visible = false;
             label2.Visible = false;
@@ -211,24 +267,27 @@ namespace trashwebWinForm
             numericUpDown2.Visible = false;
             numericUpDown3.Visible = false;
             btnDone.Visible = false;
-            button1.Visible = false;
 
         }
 
-        private void btnDone_Click(object sender, EventArgs e)
+        private void BtnDone_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Bạn Chắn Chắn Đã Hoàn Thành?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                sendList = true;
-                disable();
+                Load_Json();
+                Console.WriteLine("BtnDone_Click: " + imageList.Images.Count.ToString());
+                Disable();
                 frmSubmit frmSubmit = new frmSubmit();
                 frmSubmit.setNumTrash(countRecycle, countDangerous, countOther);
+                frmSubmit.setImageList(imageList);
                 frmSubmit.TopLevel = false;
                 frmSubmit.AutoScroll = true;
                 frmSubmit.FormBorderStyle = FormBorderStyle.None;
                 frmSubmit.Dock = DockStyle.Fill;
                 frmSubmit.Show();
+                frmSubmit.setImageList(imageList);
                 panelMain.Controls.Add(frmSubmit);
+                frmSubmit.LoadListImage();
 
                 if (leaveEdit)
                 {
@@ -253,14 +312,6 @@ namespace trashwebWinForm
                     panelMain.Controls.Add(frmInput);
                 }
             }            
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            sendString = true;
-            Console.WriteLine("sendString: " + sendString);
-            Console.WriteLine("recv_str_img: " + recv_str_img);
-            SendClient(client);
         }
     }
 }

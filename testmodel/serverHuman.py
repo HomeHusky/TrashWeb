@@ -98,8 +98,4 @@ def webcam():
     cap.release()
     cv2.destroyAllWindows()
 
-if __name__ == "__main__":
-    try:
-        webcam()
-    except:
-        pass
+webcam()

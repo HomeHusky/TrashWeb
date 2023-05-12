@@ -8,9 +8,13 @@ import datetime
 import shutil
 import pickle
 import struct
+import json
+import base64
+
+
 
 class ModelTrash:
-    def __init__(self, model1, model2 host, port):
+    def __init__(self, model2 ,host, port):
         self.data = {
                     'Carboard': 0,
                     'Dangerous': 0,
@@ -20,7 +24,7 @@ class ModelTrash:
                     'Paper': 0,
                     'Plastic': 0
                 }
-        self.model1 = model1
+        # self.model1 = model1
         self.model2 = model2
         self.check_update_avaialbe = True
         self.check_person = False
@@ -32,6 +36,18 @@ class ModelTrash:
         self.save_images = 0
         self.create_folder = 0
         self.trash_drop = False
+
+        # Mã hóa ảnh thành chuỗi base64
+        with open('img/recycle-symbol.png', 'rb') as f:
+            image_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        # Đóng gói ảnh và chuỗi string vào một đối tượng JSON
+        list_temp = self.get_values()
+        data = {
+            'image': image_data,
+            'string_data': list_temp
+        }
+        self.json_data = json.dumps(data)
 
     @staticmethod
     def reload_trash_list():
@@ -110,7 +126,7 @@ class ModelTrash:
             len_results = len(results)
             if len_results != 0:
                 if self.trash_drop == False:
-                    detect_time = int(time.time())
+                    detect_time = time.time()
                 # check = "Đúng"
                 for i in range(len_results):
                     box = boxes[i]  # returns one box
@@ -146,7 +162,7 @@ class ModelTrash:
                     if self.check_update_avaialbe == False:
                         self.data = self.reload_trash_list()
                     else:
-                        if (int(time.time()) - detect_time) > 0.5:
+                        if (time.time() - detect_time > 0.75) and (self.check_person == True):
                             # if self.check_person == True: 
                             name = self.model2.names[int(clsID)]
                         
@@ -165,7 +181,7 @@ class ModelTrash:
                                 #     print(frame_data, frame_size)
                                 #     self.data_2_server(frame_size + frame_data)
             else:                
-                if (int(time.time()) - detect_time) > 1:
+                if (time.time() - detect_time) > 0.75:
                     self.trash_drop = True
             # Display the resulting frame
             cv2.imshow(f"check", frame)
@@ -192,9 +208,9 @@ class ModelTrash:
                         data = conn.recv(1024)
                         if not data:
                             break
-                        self.check_person = data.decode()
+                        self.check_person = True if data.decode() == 'True' else False
                         
-                        if self.check_person == 'False':
+                        if self.check_person == False:
                             count += 1
                             if count == 3:
                                 self.create_folder = 0
@@ -209,6 +225,7 @@ class ModelTrash:
                                 folder_name = os.path.join(folder_path, self.folder_name)
                                 os.mkdir(folder_name)
                                 self.folder_name = folder_name
+                                
                             count = 0 
                             self.check_update_avaialbe = True
                         
@@ -218,19 +235,33 @@ class ModelTrash:
                         print("Update Data available: ",self.check_update_avaialbe)
                         print("Check Trash Droped:", self.trash_drop)
                         print(self.data)
-                        # list_temp = self.get_values()
-                        # self.data_2_server(list_temp)
+                        print("Folder: ",self.folder_name)
+                        if self.folder_name != '':
+                            # Mã hóa ảnh thành chuỗi base64
+                            with open(folder_name, 'rb') as f:
+                                image_data = base64.b64encode(f.read()).decode('utf-8')
+                            
+                            # Đóng gói ảnh và chuỗi string vào một đối tượng JSON
+                            list_temp = self.get_values()
+                            data = {
+                                'image': image_data,
+                                'string_data': list_temp
+                            }
+                            self.json_data = json.dumps(data)
+                        print(self.json_data)
+                        #list_temp = self.get_values()
+                        self.data_2_server(self.json_data)
                         time.sleep(1)
                 else:
                     break
 
     def data_2_server(self, data):
         # send data to next server
-        host2 = '192.168.1.6'
+        host2 = '192.168.1.19'
         port2 = 5565
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host2, port2))
-            s.sendall(str(data).encode())
+            s.sendall(self.json_data.encode())
             data_recv = s.recv(1024)
             if len(data_recv):
                 response = data_recv.decode()
