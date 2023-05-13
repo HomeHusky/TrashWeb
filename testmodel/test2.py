@@ -10,64 +10,60 @@ import io
 from PIL import Image
 import time
 
-TCP_IP = '192.168.1.95'
+TCP_IP = '192.168.1.26'
 TCP_PORT = 5565
 
-# Connect to the server
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((TCP_IP, TCP_PORT))
-start = time.time()
 run = True
-
+start = time.time()
 response = ''
 while (run):
-    if (time.time() - start)>=6:
-        run = False
+    # Connect to the server
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((TCP_IP, TCP_PORT))
+    
+    # Value receive from server
+    response = s.recv(1024)
+    print(response.decode())
 
+    end = time.time()
+    print (end)
+    if (end - start)>15:
+        run = False
+    
     # Mã hóa ảnh thành chuỗi base64
     with open('img/blog-1.jpg', 'rb') as f:
         image_data = base64.b64encode(f.read()).decode('utf-8')
 
-    # Đóng gói ảnh và chuỗi string vào một đối tượng JSON
-    data = {
-        'image': image_data,
-        'string_data': '[12, 2, 3]'
-    }
-    json_data = json.dumps(data)
+    a = 1
+    b = 2
+    c = 3
+    
+    z = 0
+    stringdata = [int(a),int(b),int(c)]
 
-    # Gửi dữ liệu ảnh đến server
-    # s.send(json_data.encode())
-    # while(True):
-        # Wait for the response from the server
+    count = 5
+    while (z<=count):
+        stringdata[0] = stringdata[0] + 1
+        stringdata[1] = stringdata[1] + 1
+        stringdata[2] = stringdata[2] + 1
+        z = z + 1
 
-    response = s.recv(1024)
-    print(response.decode())
-    # if response == b'Start':
-    print("sending")
-    print(json_data.count)
-    s.sendall(json_data.encode())
-        
-        # elif response == b'Ready to receive data' :
-        #      # Send a list of images to the server
-        #     image_dir = 'images'
-        #     image_files = [os.path.join(image_dir, f) for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f))]
-        #     s.sendall(str(len(image_files)).encode())
-        #     for image_file in image_files:
-        #         with open(image_file, 'rb') as f:
-        #             # Load the image using Pillow
-        #             img = Image.open(io.BytesIO(f.read()))
+    if response == b'Start':
+        # Đóng gói ảnh và chuỗi string vào một đối tượng JSON
+        data = {
+            'image': image_data,
+            'string_data': str(stringdata)
+        }
+        json_data = json.dumps(data)
+        s.sendall(json_data.encode())
 
-        #             # Convert the image to byte array
-        #             img_byte_arr = io.BytesIO()
-        #             img.save(img_byte_arr, format='JPEG')
-        #             img_byte_arr = img_byte_arr.getvalue()
-
-        #             # Send the length of the image and the image data to the server
-        #             s.sendall(str(len(img_byte_arr)).encode())
-        #             s.sendall(img_byte_arr)
-        # elif response != b'Stop' :
-            # Close the connection
     if response == b'Stop':
         s.close()
 
+    print ("Thoi gian hien tai la:", end-start)
+    print ("Bien stop: ", run)
+
+    s.close()
+
+    time.sleep(1)
 

@@ -17,7 +17,6 @@ namespace trashwebWinForm
         private int countDangerous = 0;
         private int countOther = 0;
         private int indexImage;
-        bool leaveEdit = false;
         private ImageList ImageListNew = new ImageList();
         public frmSubmit()
         {
@@ -38,12 +37,9 @@ namespace trashwebWinForm
 
         private void BtnDone_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Xác nhận hoàn thành?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show("Bạn chắc chắn danh sách trên đã chính xác?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 this.Close();
-                leaveEdit = false;
-                frmMain frmMain = new frmMain();
-                frmMain.setMove(leaveEdit);
             }
             
         }
@@ -62,29 +58,73 @@ namespace trashwebWinForm
 
         private void BtnLeft_Click(object sender, EventArgs e)
         {
-            this.Close();
-            leaveEdit = true;
-            frmMain frmMain = new frmMain();
-            frmMain.setMove(leaveEdit);
+            if (MessageBox.Show("Xác nhận bỏ qua?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                this.Close();
+            }
+        }
+
+        // Hàm resize image
+        public static System.Drawing.Image ResizeImage(System.Drawing.Image image, int width, int height)
+        {
+            // Tạo bitmap mới với kích thước mới
+            Bitmap bitmap = new Bitmap(width, height);
+
+            // Tạo đối tượng Graphics từ bitmap mới
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                // Thay đổi kích thước hình ảnh
+                graphics.DrawImage(image, 0, 0, width, height);
+            }
+
+            // Trả về hình ảnh mới
+            return bitmap;
         }
 
         public void LoadListImage()
         {
-            pictureBox1.Image = ImageListNew.Images[0];
+            System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[0], 454, 383);
+            pictureBox1.Image = resizedImage;
+            btnPrev.Enabled = false;
         }
 
         private void btnNext_Click(object sender, EventArgs e)
         {
-            pictureBox1.Refresh();
-            indexImage++;
-            pictureBox1.Image = ImageListNew.Images[indexImage];
+            btnPrev.Enabled = true;
+            if (indexImage < ImageListNew.Images.Count - 1)
+            {
+                pictureBox1.Refresh();
+                indexImage++;
+                System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[indexImage], 454, 383);
+                pictureBox1.Image = resizedImage;
+                Console.WriteLine("Current Image: " + indexImage);
+            }
+            if (indexImage ==  ImageListNew.Images.Count - 1)
+            {
+                btnNext.Enabled = false;
+            }
         }
 
         private void btnPrev_Click(object sender, EventArgs e)
         {
-            pictureBox1.Refresh();
-            indexImage--;
-            pictureBox1.Image = ImageListNew.Images[indexImage];
+            btnNext.Enabled = true;
+            if (indexImage > 0)
+            {
+                pictureBox1.Refresh();
+                indexImage--;
+                System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[indexImage], 454, 383);
+                pictureBox1.Image = resizedImage;
+                Console.WriteLine("Current Image: " + indexImage);
+            }
+            if (indexImage == 0)
+            {
+                btnPrev.Enabled = false;
+            }
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -90,29 +90,42 @@ namespace trashwebWinForm
             }
             else
             {
-                //Create trashdetail
-                website_trashdetailDTO trashdetailDTO = new website_trashdetailDTO();
-                trashdetailDTO.ID = GenerateID();
-                trashdetailDTO.Recycle = countRecycle;
-                trashdetailDTO.Dangerous = countDangerous;
-                trashdetailDTO.Othergarbage = countOther;
-                trashdetailDTO.Description = "None";
-                trashdetailDTO.Iduser_id = customerDTO.ID;
-                website_TrashdetailController.CreateTrashDetailByIdCustomer(trashdetailDTO);
+                try
+                {
+                    //Create trashdetail
+                    website_trashdetailDTO trashdetailDTO = new website_trashdetailDTO();
+                    trashdetailDTO.ID = GenerateID();
+                    trashdetailDTO.Recycle = countRecycle;
+                    trashdetailDTO.Dangerous = countDangerous;
+                    trashdetailDTO.Othergarbage = countOther;
+                    trashdetailDTO.Description = "None";
+                    trashdetailDTO.Iduser_id = customerDTO.ID;
+                    website_TrashdetailController.CreateTrashDetailByIdCustomer(trashdetailDTO);
 
-                //Create trashlist
-                website_trashlistDTO trashlistDTO = new website_trashlistDTO();
-                trashlistDTO.ID = trashdetailDTO.ID;
-                trashlistDTO.Trash_detail_id = trashdetailDTO.ID;
-                trashlistDTO.Iduser_id = customerDTO.ID;
-                trashlistDTO.Totalscore = SumPoint();
-                trashlistDTO.Description = "None";
-                trashlistDTO.Createat = DateTime.Now;
-                trashlistDTO.Numoftrash = countTrash();
-                website_TrashlistController.CreateTrashListByIdCustomer(trashlistDTO);
-                MessageBox.Show("Thành Công!");
+                    //Create trashlist
+                    website_trashlistDTO trashlistDTO = new website_trashlistDTO();
+                    trashlistDTO.ID = trashdetailDTO.ID;
+                    trashlistDTO.Trash_detail_id = trashdetailDTO.ID;
+                    trashlistDTO.Iduser_id = customerDTO.ID;
+                    trashlistDTO.Totalscore = SumPoint();
+                    trashlistDTO.Description = "None";
+                    trashlistDTO.Createat = DateTime.Now;
+                    trashlistDTO.Numoftrash = countTrash();
+                    website_TrashlistController.CreateTrashListByIdCustomer(trashlistDTO);
+                    MessageBox.Show("Thành Công!");
+                    this.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Đã xảy ra lỗi! \n" + ex.Message);
+                }
+                
             }
+        }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

@@ -20,9 +20,10 @@ namespace trashwebWinForm
 {
     public partial class frmMain : Form
     {
+        private string HOST = "192.168.1.26";
 
         // Tạo biến để set cho form đi tiếp hay lùi lại
-        public bool leaveEdit;
+        public bool leaveEdit = false;
 
         // Tạo biến image mới để lưu dữ liệu ảnh từ client để luồng chính có thể set pictureBox
         System.Drawing.Image currentImage = null;
@@ -39,21 +40,48 @@ namespace trashwebWinForm
         private string message = "Start";
 
         // Khởi tạo server
-        private readonly Thread receiveThread;
+        private Thread receiveThread;
 
         private TcpListener _tcpListener;
         //Khởi tạo biến xác nhận đã connect với client
         private bool _isListening = false;
-        private bool _isStarted = false;
         private bool stopRecv = false;
         private readonly string _jsonFolderPath = "D:\\GitTrashWeb\\trashwebWinForm\\json\\";
 
         public frmMain()
         {
             InitializeComponent();
+
             // Start the receive thread
             receiveThread = new Thread(Start_Server);
             receiveThread.Start();
+        }
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+            FormInit();
+            LoadIntroForm();
+        }
+
+        private void FormInit()
+        {
+            pictureBox1.Visible = false;
+            label7.Visible = false;
+            lblTaiChe.Visible = false;
+            lblLoaiKhac.Visible = false;
+            lblNguyHiem.Visible = false;
+            numericUpDown1.Visible = false;
+            numericUpDown2.Visible = false;
+            numericUpDown3.Visible = false;
+            btnDone.Visible = false;
+            label7.Text = "";
+            btnCancel.Visible = false;
+        }
+
+        private void LoadIntroForm()
+        {
+            
+
         }
 
         private async void Start_Server()
@@ -62,11 +90,11 @@ namespace trashwebWinForm
             {
                 return;
             }
-
+            
             _isListening = true;
 
             //Khởi tạo TcpListener lắng nghe kết nối từ client
-            IPAddress ipAddress = IPAddress.Parse("192.168.1.95");
+            IPAddress ipAddress = IPAddress.Parse(HOST);
             _tcpListener = new TcpListener(ipAddress, 5565);
             _tcpListener.Start();
             Console.WriteLine(ipAddress.ToString() + " Started!");
@@ -74,27 +102,31 @@ namespace trashwebWinForm
             
             while (_isListening)
             {
-                TcpClient client = await _tcpListener.AcceptTcpClientAsync();
-                Console.WriteLine("Client connected!");
-                await Task.Run(() => ProcessClient(client));
+                if (_isListening)
+                {
+                    TcpClient client = await _tcpListener.AcceptTcpClientAsync();
+                    if (client != null && client.Connected)
+                    {
+                        Console.WriteLine("Send to client: " + message);
+                        await Task.Run(() => ProcessClient(client));
+                    }
+                }                
             }
         }
 
-        private async Task ProcessClient(TcpClient client)
+        private Task ProcessClient(TcpClient client)
         {
-            
             using (client)
             {
                 ReceiveData(client);
             }
-            
+            return Task.CompletedTask;
         }
 
         private void Load_Json()
         {
-            stopRecv = true;
-
             _isListening = false;
+            stopRecv = true;
             string[] jsonFiles = Directory.GetFiles(_jsonFolderPath, "*.json");            
 
             // Đặt kích thước hình ảnh mặc định
@@ -124,8 +156,6 @@ namespace trashwebWinForm
                     System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
                     this.imageList.Images.Add(image);
                 }
-
-
             }
             Console.WriteLine("Imagelist.count = " + imageList.Images.Count);
         }
@@ -135,20 +165,16 @@ namespace trashwebWinForm
             if (stopRecv == true)
             {
                 message = "Stop";
-                stopRecv = false;
             }
             
             try
             {
                 // Accept a client connection
                 NetworkStream stream = client.GetStream();
-                // Send a response to the client to notify that the server is ready to receive data
-                
-                byte[] response = Encoding.ASCII.GetBytes(message);
-                Console.WriteLine($"Send data: {response}");
-                stream.Write(response, 0, response.Length);
-                _isStarted = true;
 
+                // Send a response to the client to notify that the server is ready to receive data
+                byte[] response = Encoding.ASCII.GetBytes(message);;
+                stream.Write(response, 0, response.Length);
 
                 // Nhận dữ liệu từ client và giải mã chuỗi JSON
                 StringBuilder sb = new StringBuilder();
@@ -159,7 +185,6 @@ namespace trashwebWinForm
                     sb.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
 
                 }
-                Console.WriteLine(sb.Length);
 
                 if (sb.Length > 0)
                 {
@@ -192,34 +217,12 @@ namespace trashwebWinForm
                     string filePath = Path.Combine(_jsonFolderPath, fileName);
 
                     File.WriteAllText(filePath, jsonString);
-                    Console.WriteLine(str_data);
                     client.Close();
-                }
-                
-                
-            }catch
+                } 
+            }catch (Exception e) 
             {
-                
+                MessageBox.Show("Error: " + e.Message);
             }
-            
-
-        }
-
-        public void setMove(bool LeaveEdit)
-        {
-            this.leaveEdit = LeaveEdit;
-            Console.WriteLine("LeaveEdit: " +  this.leaveEdit);
-        }
-
-        private void Main_Load(object sender, EventArgs e)
-        {
-            FormInit();
-        }
-
-        private void FormInit()
-        {
-            txt_Username.Visible = false;
-            label7.Text = "";
         }
 
         // Hàm resize image
@@ -244,6 +247,9 @@ namespace trashwebWinForm
         {
             //Invoke để đồng bộ hóa và có thể chạy được UI
             this.Invoke((MethodInvoker)delegate {
+                label1.Text = "DETECTING";
+                btnCancel.Visible = false;
+                Enable();
                 System.Drawing.Image resizedImage = ResizeImage(currentImage, 439, 303);
                 // Set hiển thị image và số rác
                 this.pictureBox1.Image = resizedImage;
@@ -254,11 +260,24 @@ namespace trashwebWinForm
             
         }
 
+        public void Enable()
+        {
+            pictureBox1.Visible = true;
+            //txt_Username.Visible = true;
+            label7.Visible = true;
+            lblTaiChe.Visible = true;
+            lblLoaiKhac.Visible = true;
+            lblNguyHiem.Visible = true;
+            numericUpDown1.Visible = true;
+            numericUpDown2.Visible = true;
+            numericUpDown3.Visible = true;
+            btnDone.Visible = true;
+        }
+
         private void Disable()
         {
+            label1.Text = "";
             pictureBox1.Visible = false;
-            label2.Visible = false;
-            txt_Username.Visible = false;
             label7.Visible = false;
             lblTaiChe.Visible = false;
             lblLoaiKhac.Visible = false;
@@ -267,7 +286,6 @@ namespace trashwebWinForm
             numericUpDown2.Visible = false;
             numericUpDown3.Visible = false;
             btnDone.Visible = false;
-
         }
 
         private void BtnDone_Click(object sender, EventArgs e)
@@ -275,7 +293,6 @@ namespace trashwebWinForm
             if (MessageBox.Show("Bạn Chắn Chắn Đã Hoàn Thành?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 Load_Json();
-                Console.WriteLine("BtnDone_Click: " + imageList.Images.Count.ToString());
                 Disable();
                 frmSubmit frmSubmit = new frmSubmit();
                 frmSubmit.setNumTrash(countRecycle, countDangerous, countOther);
@@ -289,29 +306,51 @@ namespace trashwebWinForm
                 panelMain.Controls.Add(frmSubmit);
                 frmSubmit.LoadListImage();
 
-                if (leaveEdit)
-                {
-                    frmInputId frmInput = new frmInputId();
-                    frmInput.setNumTrash(countRecycle, countDangerous, countOther);
-                    frmInput.TopLevel = false;
-                    frmInput.AutoScroll = true;
-                    frmInput.FormBorderStyle = FormBorderStyle.None;
-                    frmInput.Dock = DockStyle.Fill;
-                    frmInput.Show();
-                    panelMain.Controls.Add(frmInput);
-                }
-                else if (leaveEdit == false)
-                {
-                    frmInputId frmInput = new frmInputId();
-                    frmInput.setNumTrash(countRecycle, countDangerous, countOther);
-                    frmInput.TopLevel = false;
-                    frmInput.AutoScroll = true;
-                    frmInput.FormBorderStyle = FormBorderStyle.None;
-                    frmInput.Dock = DockStyle.Fill;
-                    frmInput.Show();
-                    panelMain.Controls.Add(frmInput);
-                }
+                frmInputId frmInput = new frmInputId();
+                frmInput.setNumTrash(countRecycle, countDangerous, countOther);
+                frmInput.TopLevel = false;
+                frmInput.AutoScroll = true;
+                frmInput.FormBorderStyle = FormBorderStyle.None;
+                frmInput.Dock = DockStyle.Fill;
+                frmInput.Show();
+                panelMain.Controls.Add(frmInput);
+
+                // Đăng ký sự kiện Closed của form con
+                frmInput.Closed += ChildForm_Closed;
             }            
+        }
+
+        private void ChildForm_Closed(object sender, EventArgs e)
+        {
+            // Hiển thị lại Label khi form con đã đóng
+            label1.Text = "CHÀO MỪNG BẠN ĐẾN VỚI GREEN AI";
+            label1.Location = new Point(143, 131);
+            btnStart.Visible = true;
+            label5.Visible = true;
+            stopRecv = false;
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            btnStart.Visible = false;
+            label5.Visible = false;
+            stopRecv = false;
+            label1.Text = "Xác nhận người dùng...";
+            label1.Location = new Point(20, 45);
+            btnCancel.Visible = true;
+            btnCancel.Location = new Point(578, 464);
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            _isListening = false;
+            Disable();
+            // Hiển thị lại Label khi form con đã đóng
+            label1.Text = "CHÀO MỪNG BẠN ĐẾN VỚI GREEN AI";
+            label1.Location = new Point(143, 131);
+            btnStart.Visible = true;
+            label5.Visible = true;
+            btnCancel.Visible = false;
         }
     }
 }
