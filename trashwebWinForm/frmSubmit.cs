@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -12,11 +14,30 @@ namespace trashwebWinForm
 {
     public partial class frmSubmit : Form
     {
+        // Sự kiện trả về biến bool cho frm Cha
+        public delegate void ButtonClickedEventHandler(object sender, bool isLeftButtonPressed);
+        public event ButtonClickedEventHandler ButtonClicked;
+
+        // Sự kiện trả về mảng string cho form Cha
+        public delegate void MyEventHandler(List<string> myArray);
+        public event MyEventHandler frmSubmit_getList;
+
+        // Tạo biến xem xét đã edit hay không
+        private bool _isEdit = false;
+
+        // Tạo List lưu files Json sau khi edit
+        private List<string> listJsonAfterEdit;
+
+        public List<string> listType = new List<string>();
+
+        private string currenFolder;
+
         // Tạo 3 biến lưu giá trị của rác
         private int countRecycle = 0;
         private int countDangerous = 0;
         private int countOther = 0;
         private int indexImage;
+        private List<string> typeTrash = new List<string>();
         private ImageList ImageListNew = new ImageList();
         public frmSubmit()
         {
@@ -27,7 +48,6 @@ namespace trashwebWinForm
         private void FrmInit()
         {
             pictureBox1.Dock = DockStyle.Fill;
-
         }
 
         private void frmSubmit_Load(object sender, EventArgs e)
@@ -35,10 +55,40 @@ namespace trashwebWinForm
             
         }
 
+        private void BtnLeft_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Xác nhận bỏ qua?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                // Gọi sự kiện ButtonClicked và truyền giá trị false
+                ButtonClicked?.Invoke(this, false);
+
+                // Đóng form con
+                this.Close();
+            }
+        }
+
         private void BtnDone_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Bạn chắc chắn danh sách trên đã chính xác?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
+                if (_isEdit == false)
+                {
+                    // Gọi sự kiện ButtonClicked và truyền giá trị false
+                    ButtonClicked?.Invoke(this, false);                    
+                }
+                else
+                {
+                    // Gọi sự kiện ButtonClicked và truyền giá trị true
+                    ButtonClicked?.Invoke(this, true);
+
+                    // Kích hoạt event và gọi delegate tương ứng trong form cha
+                    if (frmSubmit_getList != null)
+                    {
+                        listJsonAfterEdit = listType;
+                        frmSubmit_getList(listJsonAfterEdit);
+                    }
+                }
+                // Đóng form con
                 this.Close();
             }
             
@@ -56,11 +106,29 @@ namespace trashwebWinForm
             ImageListNew = imageList;
         }
 
-        private void BtnLeft_Click(object sender, EventArgs e)
+        public void setlistType(List<string> type)
         {
-            if (MessageBox.Show("Xác nhận bỏ qua?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            this.typeTrash = type;
+            string[] jsonFiles = Directory.GetFiles(currenFolder, "*.json");
+
+            foreach (string jsonFile in jsonFiles)
             {
-                this.Close();
+                // Lấy hình ảnh từ file JSON và chuyển đổi thành đối tượng Image
+                string jsonString = File.ReadAllText(jsonFile);
+
+                JsonDocument doc = JsonDocument.Parse(jsonString);
+                JsonElement root = doc.RootElement;
+
+                string typeTr = root.GetProperty("type").GetString();
+                this.listType.Add(typeTr);
+            }
+        }
+
+        public void giveCurrenFolder(string folder)
+        {
+            if (folder != null) 
+            {
+                this.currenFolder = folder;
             }
         }
 
@@ -86,6 +154,10 @@ namespace trashwebWinForm
             System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[0], 454, 383);
             pictureBox1.Image = resizedImage;
             btnPrev.Enabled = false;
+            btnRecycle.Size = new Size(278, 59);
+            btnRecycle.Location = new Point(12, 26);
+            btnRecycle.Text = typeTrash[0];
+            lblNumTrash.Text = ImageListNew.Images.Count.ToString();
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -97,6 +169,7 @@ namespace trashwebWinForm
                 indexImage++;
                 System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[indexImage], 454, 383);
                 pictureBox1.Image = resizedImage;
+                btnRecycle.Text = listType[indexImage];
                 Console.WriteLine("Current Image: " + indexImage);
             }
             if (indexImage ==  ImageListNew.Images.Count - 1)
@@ -114,6 +187,7 @@ namespace trashwebWinForm
                 indexImage--;
                 System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[indexImage], 454, 383);
                 pictureBox1.Image = resizedImage;
+                btnRecycle.Text = listType[indexImage];
                 Console.WriteLine("Current Image: " + indexImage);
             }
             if (indexImage == 0)
@@ -122,9 +196,79 @@ namespace trashwebWinForm
             }
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void DisableAfterEdit()
         {
+            btnRecycle.Size = new Size(278, 59);
+            btnRecycle.Location = new Point(12, 26);
+            btnRecycle.Enabled = false;
+            btnDangerous.Visible = false;
+            btnOther.Visible = false;
+        }
 
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            if(btnEdit.Text == "Sửa")
+            {
+                btnEdit.Text = "Hủy";
+                btnRecycle.Size = new Size(79, 43);
+                btnRecycle.Location = new Point(12, 41);
+                btnRecycle.Text = "Recycle";
+                btnRecycle.Enabled = true;
+                btnDangerous.Visible = true;
+                btnOther.Visible = true;
+            }
+            else
+            {
+                btnEdit.Text = "Sửa";
+                DisableAfterEdit();
+            }
+            if (_isEdit)
+            {
+                Console.WriteLine("Changed: True");
+            }
+            else Console.WriteLine("Changed: False");
+
+        }
+
+        private void btnRecycle_Click(object sender, EventArgs e)
+        {
+            _isEdit = true;
+            btnRecycle.Text = "Recycle";
+            btnEdit.Text = "Sửa";
+            listType[indexImage] = "Recycle";
+            DisableAfterEdit();
+        }
+
+        private void btnDangerous_Click(object sender, EventArgs e)
+        {
+            _isEdit = true;
+            btnRecycle.Text = "Dangerous";
+            btnEdit.Text = "Sửa";
+            listType[indexImage] = "Dangerous";
+            DisableAfterEdit();
+        }
+
+        private void btnOther_Click(object sender, EventArgs e)
+        {
+            _isEdit = true;
+            btnRecycle.Text = "Other";
+            btnEdit.Text = "Sửa";
+            listType[indexImage] = "Other";
+            DisableAfterEdit();
+        }
+
+        private void btnOld_Click(object sender, EventArgs e)
+        {
+            
+            btnRecycle.Text = typeTrash[indexImage];
+            Console.WriteLine(typeTrash[indexImage]);
+        }
+
+        private void btnNew_Click(object sender, EventArgs e)
+        {
+            
+            btnRecycle.Text = listType[indexImage];
+            Console.WriteLine(listType[indexImage]);
         }
     }
 }

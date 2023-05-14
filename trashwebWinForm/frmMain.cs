@@ -14,13 +14,22 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net.NetworkInformation;
 using static System.Net.Mime.MediaTypeNames;
+using Newtonsoft.Json;
 
 namespace trashwebWinForm
 {
     public partial class frmMain : Form
     {
-        private string HOST = "192.168.1.26";
+        // Tạo biến string lấy id người dùng sau khi thực hiện
+        public string userId;
+
+        // Tạo mảng string để nhận từ frm Con
+        List<string> getTypeListAfterEdit;
+
+        // Tạo biến bool để xem xét xóa folder ảnh
+        public bool isEdit = false;
 
         // Tạo biến để set cho form đi tiếp hay lùi lại
         public bool leaveEdit = false;
@@ -34,27 +43,36 @@ namespace trashwebWinForm
         public int countDangerous = 0;
         public int countOther = 0;
 
-        //Tạo listImage để lưu ảnh
+        // Tạo biến lưu loại rác nhận được
+        public string typeTrash;
+
+        // Tạo listImage để lưu ảnh
         public ImageList imageList = new ImageList();
+
+        // Tạo list string để gửi đến form con
+        public List<string> listType = new List<string>();
+
+        // Tạo list lưu numTrash
+        public List<string> listnumTrash = new List<string>();
 
         private string message = "Start";
 
         // Khởi tạo server
         private Thread receiveThread;
 
-        private TcpListener _tcpListener;
+        private TcpListener _tcpListener; 
         //Khởi tạo biến xác nhận đã connect với client
         private bool _isListening = false;
         private bool stopRecv = false;
+        private readonly string _jsonFolderRamPath = "D:\\GitTrashWeb\\trashwebWinForm\\json\\jsonRAM\\";
         private readonly string _jsonFolderPath = "D:\\GitTrashWeb\\trashwebWinForm\\json\\";
+        private readonly string _reportPath = "D:\\GitTrashWeb\\trashwebWinForm\\Report\\";
+
+        private string currentFolrder;
 
         public frmMain()
         {
             InitializeComponent();
-
-            // Start the receive thread
-            receiveThread = new Thread(Start_Server);
-            receiveThread.Start();
         }
 
         private void Main_Load(object sender, EventArgs e)
@@ -84,6 +102,20 @@ namespace trashwebWinForm
 
         }
 
+        private string getIdAdress()
+        {
+            // Lấy địa chỉ IPv4 của máy tính
+            var ipv4Addresses = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                .SelectMany(x => x.GetIPProperties().UnicastAddresses)
+                .Where(x => x.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                .Select(x => x.Address.ToString())
+                .ToList();
+
+            // Hiển thị địa chỉ IPv4
+            return ipv4Addresses[0];
+        }
+
         private async void Start_Server()
         {
             if (_isListening)
@@ -94,15 +126,14 @@ namespace trashwebWinForm
             _isListening = true;
 
             //Khởi tạo TcpListener lắng nghe kết nối từ client
-            IPAddress ipAddress = IPAddress.Parse(HOST);
+            IPAddress ipAddress = IPAddress.Parse(getIdAdress());
             _tcpListener = new TcpListener(ipAddress, 5565);
             _tcpListener.Start();
             Console.WriteLine(ipAddress.ToString() + " Started!");
 
-            
             while (_isListening)
             {
-                if (_isListening)
+                try
                 {
                     TcpClient client = await _tcpListener.AcceptTcpClientAsync();
                     if (client != null && client.Connected)
@@ -110,8 +141,20 @@ namespace trashwebWinForm
                         Console.WriteLine("Send to client: " + message);
                         await Task.Run(() => ProcessClient(client));
                     }
-                }                
+                }
+                catch (ObjectDisposedException)
+                {
+                    // _tcpListener has been disposed
+                    break;
+                }
             }
+        }
+
+        private void Stop_Server()
+        {
+            _isListening = false;
+            _tcpListener?.Stop();
+            Console.WriteLine("Server stopped!");
         }
 
         private Task ProcessClient(TcpClient client)
@@ -123,41 +166,24 @@ namespace trashwebWinForm
             return Task.CompletedTask;
         }
 
-        private void Load_Json()
+        private void CreateFolder()
         {
-            _isListening = false;
-            stopRecv = true;
-            string[] jsonFiles = Directory.GetFiles(_jsonFolderPath, "*.json");            
+            string folderName = DateTime.Now.ToString("dd_MM_yyyy_HH_mm");
+            string folderPath = Path.Combine(_jsonFolderPath, folderName);
+            Directory.CreateDirectory(folderPath);
 
-            // Đặt kích thước hình ảnh mặc định
-            imageList.ImageSize = new Size(255, 255);
+            currentFolrder = folderPath;
 
-            foreach (string jsonFile in jsonFiles)
+            // Lấy danh sách tất cả các tệp tin trong thư mục
+            string[] files = Directory.GetFiles(_jsonFolderRamPath);
+
+            // Sao chép các tệp tin đến thư mục đích
+            foreach (string file in files)
             {
-                // Lấy hình ảnh từ file JSON và chuyển đổi thành đối tượng Image
-                string jsonString = File.ReadAllText(jsonFile);
-                //dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonString);
-                //string imageBase64String = obj.image;
-                //byte[] imageBytes = Convert.FromBase64String(imageBase64String);
-                //MemoryStream ms = new MemoryStream(imageBytes);
-                //System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
-
-                //// Thêm hình ảnh vào ImageList
-                //this.imageList.Images.Add(image);
-                // Giải mã chuỗi JSON và truy cập các thuộc tính
-                JsonDocument doc = JsonDocument.Parse(jsonString);
-                JsonElement root = doc.RootElement;
-                string image_data = root.GetProperty("image").GetString();
-
-                // Lấy ảnh từ dữ liệu nhận được và hiển thị trên pictureBox
-                byte[] imgData = Convert.FromBase64String(image_data);
-                using (MemoryStream ms = new MemoryStream(imgData))
-                {
-                    System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
-                    this.imageList.Images.Add(image);
-                }
+                string fileName = Path.GetFileName(file);
+                string destinationFilePath = Path.Combine(currentFolrder, fileName);
+                File.Copy(file, destinationFilePath, true);
             }
-            Console.WriteLine("Imagelist.count = " + imageList.Images.Count);
         }
 
         private void ReceiveData(TcpClient client)
@@ -166,14 +192,17 @@ namespace trashwebWinForm
             {
                 message = "Stop";
             }
-            
+            else 
+            {
+                message = "Start";
+            }
             try
             {
                 // Accept a client connection
                 NetworkStream stream = client.GetStream();
 
                 // Send a response to the client to notify that the server is ready to receive data
-                byte[] response = Encoding.ASCII.GetBytes(message);;
+                byte[] response = Encoding.ASCII.GetBytes(message);
                 stream.Write(response, 0, response.Length);
 
                 // Nhận dữ liệu từ client và giải mã chuỗi JSON
@@ -195,7 +224,7 @@ namespace trashwebWinForm
                     JsonElement root = doc.RootElement;
                     string image_data = root.GetProperty("image").GetString();
                     string str_data = root.GetProperty("string_data").GetString();
-
+                    string type = root.GetProperty("type").GetString();
                     // Lấy ảnh từ dữ liệu nhận được và hiển thị trên pictureBox
                     byte[] imgData = Convert.FromBase64String(image_data);
                     using (MemoryStream ms = new MemoryStream(imgData))
@@ -209,20 +238,53 @@ namespace trashwebWinForm
                     countRecycle = int.Parse(numbers[0]);
                     countDangerous = int.Parse(numbers[1]);
                     countOther = int.Parse(numbers[2]);
+                    typeTrash = type;
 
                     setVisual();
 
-                    string jsonString = sb.ToString();
-                    string fileName = DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".json";
-                    string filePath = Path.Combine(_jsonFolderPath, fileName);
+                    string fileName = DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".json";
 
-                    File.WriteAllText(filePath, jsonString);
+                    string filePath = Path.Combine(_jsonFolderRamPath, fileName);
+                    File.WriteAllText(filePath, json_data);
                     client.Close();
                 } 
             }catch (Exception e) 
             {
                 MessageBox.Show("Error: " + e.Message);
             }
+        }
+
+        private void Load_Json()
+        {
+            CreateFolder();
+            string[] jsonFiles = Directory.GetFiles(_jsonFolderRamPath, "*.json");
+
+            // Đặt kích thước hình ảnh mặc định
+            imageList.ImageSize = new Size(255, 255);
+
+            foreach (string jsonFile in jsonFiles)
+            {
+                // Lấy hình ảnh từ file JSON và chuyển đổi thành đối tượng Image
+                string jsonString = File.ReadAllText(jsonFile);
+                
+                JsonDocument doc = JsonDocument.Parse(jsonString);
+                JsonElement root = doc.RootElement;
+                string image_data = root.GetProperty("image").GetString();
+
+                // Lấy ảnh từ dữ liệu nhận được và hiển thị trên pictureBox
+                byte[] imgData = Convert.FromBase64String(image_data);
+                using (MemoryStream ms = new MemoryStream(imgData))
+                {
+                    System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
+                    this.imageList.Images.Add(image);
+                }
+
+                string typeTr = root.GetProperty("type").GetString();
+                this.listType.Add(typeTr);
+                string str_data = root.GetProperty("string_data").GetString();
+                this.listnumTrash.Add(str_data);
+            }
+            Console.WriteLine("Imagelist.count = " + imageList.Images.Count);
         }
 
         // Hàm resize image
@@ -247,6 +309,7 @@ namespace trashwebWinForm
         {
             //Invoke để đồng bộ hóa và có thể chạy được UI
             this.Invoke((MethodInvoker)delegate {
+                DisableFormIntro();
                 label1.Text = "DETECTING";
                 btnCancel.Visible = false;
                 Enable();
@@ -256,6 +319,7 @@ namespace trashwebWinForm
                 this.numericUpDown1.Value = countRecycle;
                 this.numericUpDown2.Value = countDangerous;
                 this.numericUpDown3.Value = countOther;
+                this.label7.Text = typeTrash;
             });
             
         }
@@ -292,17 +356,25 @@ namespace trashwebWinForm
         {
             if (MessageBox.Show("Bạn Chắn Chắn Đã Hoàn Thành?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
+                stopRecv = true;
                 Load_Json();
                 Disable();
+
                 frmSubmit frmSubmit = new frmSubmit();
+
+                frmSubmit.ButtonClicked += frmSubmit_ButtonClicked;
+                frmSubmit.frmSubmit_getList += frmSubmit_getList;
+
+                frmSubmit.giveCurrenFolder(currentFolrder);
                 frmSubmit.setNumTrash(countRecycle, countDangerous, countOther);
                 frmSubmit.setImageList(imageList);
+                frmSubmit.setlistType(listType);
+
                 frmSubmit.TopLevel = false;
                 frmSubmit.AutoScroll = true;
                 frmSubmit.FormBorderStyle = FormBorderStyle.None;
                 frmSubmit.Dock = DockStyle.Fill;
                 frmSubmit.Show();
-                frmSubmit.setImageList(imageList);
                 panelMain.Controls.Add(frmSubmit);
                 frmSubmit.LoadListImage();
 
@@ -315,12 +387,30 @@ namespace trashwebWinForm
                 frmInput.Show();
                 panelMain.Controls.Add(frmInput);
 
+                frmInput.frmInputId_getString += frmSubmit_Send_Back_Id_AfterClosed;
                 // Đăng ký sự kiện Closed của form con
-                frmInput.Closed += ChildForm_Closed;
+                frmInput.Closed += frmInput_Closed;
+                
             }            
         }
 
-        private void ChildForm_Closed(object sender, EventArgs e)
+        private void frmSubmit_getList(List<string> myArray)
+        {
+            // Xử lý dữ liệu myArray được truyền từ form con
+            getTypeListAfterEdit = myArray;
+        }
+
+        private void frmSubmit_ButtonClicked(object sender, bool isLeftButtonPressed)
+        {
+            isEdit = isLeftButtonPressed;
+        }
+
+        private void frmSubmit_Send_Back_Id_AfterClosed(string UserIdGiveBack)
+        {
+            userId = UserIdGiveBack;
+        }
+
+        private void frmInput_Closed(object sender, EventArgs e)
         {
             // Hiển thị lại Label khi form con đã đóng
             label1.Text = "CHÀO MỪNG BẠN ĐẾN VỚI GREEN AI";
@@ -328,22 +418,90 @@ namespace trashwebWinForm
             btnStart.Visible = true;
             label5.Visible = true;
             stopRecv = false;
+            Stop_Server();
+
+            // Lấy danh sách tất cả các tệp tin trong thư mục RAM
+            string[] files = Directory.GetFiles(_jsonFolderRamPath);
+
+            // Xóa từng tệp tin trong danh sách RAM
+            foreach (string file in files)
+            {
+                File.Delete(file);
+            }
+
+            // Xóa folder 
+            if (isEdit == false)
+            {
+                // Kiểm tra xem thư mục có tồn tại hay không trước khi xóa
+                if (Directory.Exists(currentFolrder))
+                {
+                    Directory.Delete(currentFolrder, true);
+                }
+            }
+            else
+            {
+                // Kiểu folder: Ngày --> ID --> Giờ phút
+                string folderDay = DateTime.Now.ToString("dd_MM_yyyy");
+                string folderOne = Path.Combine(_reportPath, folderDay);
+                if (!Directory.Exists(folderOne))
+                {
+                    Directory.CreateDirectory(folderOne);
+                }
+
+                string folderID = userId;
+                string folderSecond = Path.Combine(folderOne, folderID);
+                if (!Directory.Exists(folderSecond))
+                {
+                    Directory.CreateDirectory(folderSecond);
+                }
+
+                string folderTime = DateTime.Now.ToString("HH_mm_ss"); ;
+                string folderThird = Path.Combine(folderSecond, folderTime);
+                if (!Directory.Exists(folderThird))
+                {
+                    Directory.CreateDirectory(folderThird);
+                }
+
+                // Tạo thư mục con Image và name
+                string imageDirectory = Path.Combine(folderThird, "Image");
+                string nameDirectory = Path.Combine(folderThird, "Name");
+                Directory.CreateDirectory(imageDirectory);
+                Directory.CreateDirectory(nameDirectory);
+
+                // Lưu hình ảnh vào thư mục Image và lưu chuỗi vào thư mục Name
+                for (int i = 0; i < getTypeListAfterEdit.Count; i++)
+                {
+                    string imagePath = Path.Combine(imageDirectory, i + ".jpg");
+                    imageList.Images[i].Save(imagePath);
+
+                    string jsonString = JsonConvert.SerializeObject(getTypeListAfterEdit[i]);
+                    string namePath = Path.Combine(nameDirectory, i + ".json");
+                    File.WriteAllText(namePath, jsonString);
+                }
+            }
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private void DisableFormIntro()
         {
             btnStart.Visible = false;
             label5.Visible = false;
-            stopRecv = false;
             label1.Text = "Xác nhận người dùng...";
             label1.Location = new Point(20, 45);
             btnCancel.Visible = true;
             btnCancel.Location = new Point(578, 464);
         }
 
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            DisableFormIntro();
+            // Start the receive thread
+            receiveThread = new Thread(Start_Server);
+            receiveThread.Start();
+        }
+
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            _isListening = false;
+            Stop_Server();
             Disable();
             // Hiển thị lại Label khi form con đã đóng
             label1.Text = "CHÀO MỪNG BẠN ĐẾN VỚI GREEN AI";

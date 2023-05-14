@@ -16,5 +16,10 @@ namespace trashwebWinForm.Controllers
         {
             return website_TrashlistDAO.CreateTrashListByIdCustomer(website_TrashlistDTO);
         }
+
+        public List<double> GetTotalScoreById(string iduser_id)
+        {
+            return website_TrashlistDAO.GetTotalScoreById(iduser_id);
+        }
     }
 }

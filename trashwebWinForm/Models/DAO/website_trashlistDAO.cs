@@ -34,5 +34,14 @@ namespace trashwebWinForm.Models.DAO
             
             return _dbConnection.QueryFirstOrDefault<website_trashlistDTO>(query, parameters);
         }
+
+        public List<double> GetTotalScoreById(string iduser_id)
+        {
+            String query = "SELECT totalscore FROM public.website_trashlist WHERE iduser_id = @iduser_id";
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("iduser_id", iduser_id);
+
+            return _dbConnection.Query<double>(query, parameters).ToList();
+        }
     }
 }

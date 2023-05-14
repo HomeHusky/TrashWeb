@@ -17,5 +17,11 @@ namespace trashwebWinForm.Controllers
         {
             return website_CustomerDAO.GetCustomerById(id);
         }
+
+        public website_customerDTO UpdateCustomerPointById(double point, string id)
+        {
+            return website_CustomerDAO.UpdateCustomerPointById(point, id);
+        }
     }
+
 }

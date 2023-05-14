@@ -29,5 +29,16 @@ namespace trashwebWinForm.Models.DAO
 
             return _dbConnection.QueryFirstOrDefault<website_customerDTO>(query, parameters);
         }
+
+        // Update point ng dùng
+        public website_customerDTO UpdateCustomerPointById(double point, string id)
+        {
+            String query = "UPDATE public.website_customer SET point = @point WHERE id = @id";
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("point", point);
+            parameters.Add("id", id);
+
+            return _dbConnection.QueryFirstOrDefault(query, parameters);
+        }
     }
 }

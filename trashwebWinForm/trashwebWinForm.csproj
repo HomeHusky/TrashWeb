@@ -192,7 +192,8 @@
     <None Include="Resources\recycle-symbol.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="json\" />
+    <Folder Include="json\jsonRAM\" />
+    <Folder Include="Report\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets" Condition="Exists('packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets')" />

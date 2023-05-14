@@ -16,6 +16,10 @@ namespace trashwebWinForm
 {
     public partial class frmInputId : Form
     {
+        // Sự kiện trả về mảng string cho form Cha
+        public delegate void MyEventHandler(string myString);
+        public event MyEventHandler frmInputId_getString;
+
         // Tạo 3 biến lưu giá trị của rác
         private int countRecycle = 0;
         private int countDangerous = 0;
@@ -112,15 +116,26 @@ namespace trashwebWinForm
                     trashlistDTO.Createat = DateTime.Now;
                     trashlistDTO.Numoftrash = countTrash();
                     website_TrashlistController.CreateTrashListByIdCustomer(trashlistDTO);
+
+                    List<double> listScoreUser = website_TrashlistController.GetTotalScoreById(customerDTO.ID);
+
+                    double totalScore = 0;
+                    for (int i = 0; i < listScoreUser.Count; i++)
+                    {
+                        totalScore += listScoreUser[i];
+                    }
+
+                    website_CustomerController.UpdateCustomerPointById(totalScore, txt_Id.Text);
+
+                    frmInputId_getString(customerDTO.ID);
                     MessageBox.Show("Thành Công!");
                     this.Close();
-                }
+            }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Đã xảy ra lỗi! \n" + ex.Message);
-                }
-                
+                MessageBox.Show("Đã xảy ra lỗi khi cập nhật điểm! \n" + ex.Message);
             }
+        }
         }
 
         private void button1_Click(object sender, EventArgs e)
