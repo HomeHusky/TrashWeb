@@ -20,7 +20,6 @@ def get_largest_area_box(boxes):
 
     return boxes[areas.index(max(areas))]
 
-
 def update_global_variable(status):
     # send data to next server
     host = 'localhost'
@@ -40,10 +39,6 @@ def webcam():
     goout = 0
     status = False
     color = (0,0,255)
-    
-    
-    
-
 
     while True:
         _, frame = cap.read()
@@ -75,17 +70,20 @@ def webcam():
         else:
             goout+=1
 
-        if goin>=6:
+        if goin>=3:
             status = True
             color = (0,255,0)
-        if goout>=12:
+        if goout>=3:
             goin=0
             status = False
             color = (0,0,255)
 
         # Put text to show the status
         cv2.putText(frame,str(status),(20,20),cv2.FONT_HERSHEY_SIMPLEX,1,color,2,cv2.LINE_AA)
-        update_global_variable(status)
+        try:
+            update_global_variable(status)
+        except Exception:
+            print("No connection Trash Server!")
         print(status)
         print(goin, goout)
         # Draw box into frame

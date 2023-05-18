@@ -30,15 +30,16 @@ namespace trashwebWinForm
 
         public List<string> listType = new List<string>();
 
+        public List<string> listImageAsStringFromParent;
+
         private string currenFolder;
 
         // Tạo 3 biến lưu giá trị của rác
         private int countRecycle = 0;
         private int countDangerous = 0;
         private int countOther = 0;
-        private int indexImage;
+        private int indexImage = 0;
         private List<string> typeTrash = new List<string>();
-        private ImageList ImageListNew = new ImageList();
         public frmSubmit()
         {
             InitializeComponent();
@@ -53,6 +54,11 @@ namespace trashwebWinForm
         private void frmSubmit_Load(object sender, EventArgs e)
         {
             
+        }
+
+        private void getPictureBoxSize(ref Size size)
+        {
+            size = pictureBox1.Size;
         }
 
         private void BtnLeft_Click(object sender, EventArgs e)
@@ -101,11 +107,6 @@ namespace trashwebWinForm
             this.countOther = other;
         }
 
-        public void setImageList(ImageList imageList)
-        {
-            ImageListNew = imageList;
-        }
-
         public void setlistType(List<string> type)
         {
             this.typeTrash = type;
@@ -122,6 +123,11 @@ namespace trashwebWinForm
                 string typeTr = root.GetProperty("type").GetString();
                 this.listType.Add(typeTr);
             }
+        }
+
+        public void setImageAsStringList(List<string> imageList)
+        {
+            this.listImageAsStringFromParent = imageList;
         }
 
         public void giveCurrenFolder(string folder)
@@ -149,30 +155,39 @@ namespace trashwebWinForm
             return bitmap;
         }
 
+        public Image ConvertToImage(string ImageString)
+        {
+            byte[] imgData = Convert.FromBase64String(ImageString);
+            MemoryStream ms = new MemoryStream(imgData, 0, imgData.Length);
+            Image image = Image.FromStream(ms);
+            return image;
+        }
+
         public void LoadListImage()
         {
-            System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[0], 454, 383);
+            string imageStart = listImageAsStringFromParent[0];
+            System.Drawing.Image resizedImage = ResizeImage(ConvertToImage(imageStart), 454, 383);
             pictureBox1.Image = resizedImage;
             btnPrev.Enabled = false;
             btnRecycle.Size = new Size(278, 59);
             btnRecycle.Location = new Point(12, 26);
             btnRecycle.Text = typeTrash[0];
-            lblNumTrash.Text = ImageListNew.Images.Count.ToString();
+            lblNumTrash.Text = listImageAsStringFromParent.Count.ToString();
         }
 
         private void btnNext_Click(object sender, EventArgs e)
         {
             btnPrev.Enabled = true;
-            if (indexImage < ImageListNew.Images.Count - 1)
+            if (indexImage < listImageAsStringFromParent.Count - 1)
             {
                 pictureBox1.Refresh();
                 indexImage++;
-                System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[indexImage], 454, 383);
+                System.Drawing.Image resizedImage = ResizeImage(ConvertToImage(listImageAsStringFromParent[indexImage]), 454, 383);
                 pictureBox1.Image = resizedImage;
                 btnRecycle.Text = listType[indexImage];
                 Console.WriteLine("Current Image: " + indexImage);
             }
-            if (indexImage ==  ImageListNew.Images.Count - 1)
+            if (indexImage == listImageAsStringFromParent.Count - 1)
             {
                 btnNext.Enabled = false;
             }
@@ -185,7 +200,7 @@ namespace trashwebWinForm
             {
                 pictureBox1.Refresh();
                 indexImage--;
-                System.Drawing.Image resizedImage = ResizeImage(ImageListNew.Images[indexImage], 454, 383);
+                System.Drawing.Image resizedImage = ResizeImage(ConvertToImage(listImageAsStringFromParent[indexImage]), 454, 383);
                 pictureBox1.Image = resizedImage;
                 btnRecycle.Text = listType[indexImage];
                 Console.WriteLine("Current Image: " + indexImage);
@@ -212,7 +227,6 @@ namespace trashwebWinForm
                 btnEdit.Text = "Hủy";
                 btnRecycle.Size = new Size(79, 43);
                 btnRecycle.Location = new Point(12, 41);
-                btnRecycle.Text = "Recycle";
                 btnRecycle.Enabled = true;
                 btnDangerous.Visible = true;
                 btnOther.Visible = true;

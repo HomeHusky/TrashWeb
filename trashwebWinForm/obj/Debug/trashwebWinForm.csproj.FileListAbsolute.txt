@@ -54,3 +54,7 @@ D:\GitTrashWeb\trashwebWinForm\obj\Debug\trashwebWinForm.frmSubmit.resources
 D:\GitTrashWeb\trashwebWinForm\obj\Debug\trashwebWinForm.frmInputId.resources
 D:\GitTrashWeb\trashwebWinForm\bin\Debug\Newtonsoft.Json.dll
 D:\GitTrashWeb\trashwebWinForm\bin\Debug\Newtonsoft.Json.xml
+D:\GitTrashWeb\trashwebWinForm\bin\Debug\trashwebWinForm.exe.manifest
+D:\GitTrashWeb\trashwebWinForm\bin\Debug\trashwebWinForm.application
+D:\GitTrashWeb\trashwebWinForm\obj\Debug\trashwebWinForm.exe.manifest
+D:\GitTrashWeb\trashwebWinForm\obj\Debug\trashwebWinForm.application

@@ -10,16 +10,17 @@ import io
 from PIL import Image
 import time
 
-# Lấy tên máy tính của bạn
-hostname = socket.gethostname()
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip_address = s.getsockname()[0]
+    s.close()
+    if ip_address.startswith("192.168."):
+        return ip_address
+    return None
 
-# Lấy địa chỉ IP của máy tính
-ip_address = socket.gethostbyname(hostname)
 
-print("Hostname:", hostname)
-print("IP address:", ip_address)
-
-TCP_IP = ip_address
+TCP_IP = get_local_ip()
 TCP_PORT = 5565
 
 
@@ -43,7 +44,7 @@ while (run):
     print(response.decode())
 
     end = time.time()
-    if (end - start)>1:
+    if (end - start)>20:
         run = False
     
     # Mã hóa ảnh thành chuỗi base64

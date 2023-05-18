@@ -20,7 +20,7 @@
 
 <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
     
-    <a class="btn btn-lg btn-primary rounded" href="{% url 'voucher' %}">
+    <a class="btn btn-lg btn-success rounded" href="{% url 'voucher' %}">
             <i class="bi bi-arrow-left"></i>
     </a>
     <div class="container py-5">
@@ -36,13 +36,13 @@
         {% endif %}
         <div class="row g-5">
             <div class="section-title position-relative pb-3 mb-5 col-lg-7"> 
-                <h5 class="fw-bold text-primary text-uppercase">Chi Tiết Voucher</h5>
+                <h5 class="fw-bold text-success text-uppercase">Chi Tiết Voucher</h5>
                 <p>By: {{voucher.author.Name}} - {{voucher.author.pk}}</p>
             </div>
             
             <div class="col-lg-5" >
-                <h5 class="fw-bold text-primary text-uppercase">Điểm Hiện Tại Của Bạn</h5>
-                <h5 class="fw-bold text-primary text-uppercase">{{user.customer.point}}</h5>
+                <h5 class="fw-bold text-success text-uppercase">Điểm Hiện Tại Của Bạn</h5>
+                <h5 class="fw-bold text-success text-uppercase">{{user.customer.point}}</h5>
             </div>
             <div class="col-lg-7">
                 <h1 class="mb-0">{{voucher.title}}</h1>
@@ -55,7 +55,7 @@
                     <form action="{% url 'buy_voucher' voucher.pk %}"
                     method="POST">
                         {% csrf_token %}
-                        <button type="submit", name="voucher_id", value="{{voucher.id}}", class="btn btn-primary py-3 px-5 mt-3 wow zoomIn" data-wow-delay="0.9s">Chuyển Đổi</button>
+                        <button type="submit", name="voucher_id", value="{{voucher.id}}", class="btn btn-success py-3 px-5 mt-3 wow zoomIn" data-wow-delay="0.9s">Chuyển Đổi</button>
                     </form>
                 {% else %}
                     <form action="{% url 'buy_voucher_fail' voucher.pk %}"
@@ -96,7 +96,7 @@
               {% endfor %}
             <br/>
 
-            <a href="{% url 'add_comment' voucher.pk %}">Thêm Đánh Giá</a>
+            <a href="{% url 'add_comment' voucher.pk %}" style="color: #198754;">Thêm Đánh Giá</a>
             <br/><br/>
             {% endif %}
             

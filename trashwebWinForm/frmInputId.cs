@@ -72,7 +72,7 @@ namespace trashwebWinForm
 
         public float SumPoint()
         {
-            return (countRecycle*POINTS.RECYCLE + countDangerous*POINTS.DANGEROUS + countOther*POINTS.OTHER);
+            return (countRecycle * POINTS.RECYCLE + countDangerous * POINTS.DANGEROUS + countOther * POINTS.OTHER);
         }
 
         private void frmInputId_Load(object sender, EventArgs e)
@@ -85,7 +85,7 @@ namespace trashwebWinForm
             //Check các giá trị nhập vào
             if (!ElementCheck()) return;
 
-            
+
             customerDTO = website_CustomerController.GetCustomerById(txt_Id.Text);
 
             if (customerDTO == null)
@@ -94,50 +94,48 @@ namespace trashwebWinForm
             }
             else
             {
-                try
+                //try
+                //{
+                //Create trashdetail
+                website_trashdetailDTO trashdetailDTO = new website_trashdetailDTO();
+                trashdetailDTO.ID = GenerateID();
+                trashdetailDTO.Recycle = countRecycle;
+                trashdetailDTO.Dangerous = countDangerous;
+                trashdetailDTO.Othergarbage = countOther;
+                trashdetailDTO.Description = "None";
+                trashdetailDTO.Iduser_id = customerDTO.ID;
+                website_TrashdetailController.CreateTrashDetailByIdCustomer(trashdetailDTO);
+
+                //Create trashlist
+                website_trashlistDTO trashlistDTO = new website_trashlistDTO();
+                trashlistDTO.ID = trashdetailDTO.ID;
+                trashlistDTO.Trash_detail_id = trashdetailDTO.ID;
+                trashlistDTO.Iduser_id = customerDTO.ID;
+                trashlistDTO.Totalscore = SumPoint();
+                trashlistDTO.Description = "None";
+                trashlistDTO.Createat = DateTime.Now;
+                trashlistDTO.Numoftrash = countTrash();
+                website_TrashlistController.CreateTrashListByIdCustomer(trashlistDTO);
+
+                List<double> listScoreUser = website_TrashlistController.GetTotalScoreById(customerDTO.ID);
+
+                double totalScore = 0;
+                for (int i = 0; i < listScoreUser.Count; i++)
                 {
-                    //Create trashdetail
-                    website_trashdetailDTO trashdetailDTO = new website_trashdetailDTO();
-                    trashdetailDTO.ID = GenerateID();
-                    trashdetailDTO.Recycle = countRecycle;
-                    trashdetailDTO.Dangerous = countDangerous;
-                    trashdetailDTO.Othergarbage = countOther;
-                    trashdetailDTO.Description = "None";
-                    trashdetailDTO.Iduser_id = customerDTO.ID;
-                    website_TrashdetailController.CreateTrashDetailByIdCustomer(trashdetailDTO);
+                    totalScore += listScoreUser[i];
+                }
 
-                    //Create trashlist
-                    website_trashlistDTO trashlistDTO = new website_trashlistDTO();
-                    trashlistDTO.ID = trashdetailDTO.ID;
-                    trashlistDTO.Trash_detail_id = trashdetailDTO.ID;
-                    trashlistDTO.Iduser_id = customerDTO.ID;
-                    trashlistDTO.Totalscore = SumPoint();
-                    trashlistDTO.Description = "None";
-                    trashlistDTO.Createat = DateTime.Now;
-                    trashlistDTO.Numoftrash = countTrash();
-                    website_TrashlistController.CreateTrashListByIdCustomer(trashlistDTO);
+                website_CustomerController.UpdateCustomerPointById(totalScore, txt_Id.Text);
 
-                    List<double> listScoreUser = website_TrashlistController.GetTotalScoreById(customerDTO.ID);
-
-                    double totalScore = 0;
-                    for (int i = 0; i < listScoreUser.Count; i++)
-                    {
-                        totalScore += listScoreUser[i];
-                    }
-
-                    website_CustomerController.UpdateCustomerPointById(totalScore, txt_Id.Text);
-
-                    frmInputId_getString(customerDTO.ID);
-                    MessageBox.Show("Thành Công!");
-                    this.Close();
+                frmInputId_getString(customerDTO.ID);
+                MessageBox.Show("Thành Công!");
+                this.Close();
             }
-                catch (Exception ex)
-                {
-                MessageBox.Show("Đã xảy ra lỗi khi cập nhật điểm! \n" + ex.Message);
-            }
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show("Đã xảy ra lỗi khi cập nhật điểm! \n" + ex.Message);
+            //}
         }
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();

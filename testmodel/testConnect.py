@@ -12,7 +12,7 @@ send_str = ""
 send_list =""
 
 # Địa chỉ IP và cổng của server C#
-TCP_IP = '192.168.1.19'
+TCP_IP = '192.168.1.15'
 TCP_PORT = 5565
 
 # Tạo socket và kết nối đến server C#
