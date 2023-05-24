@@ -138,6 +138,8 @@ namespace trashwebWinForm
 
             //Khởi tạo TcpListener lắng nghe kết nối từ client
             IPAddress ipAddress = IPAddress.Parse(getIdAdress());
+            //IPAddress ipAddress = IPAddress.Parse("172.21.0.164");
+
             _tcpListener = new TcpListener(ipAddress, 5565);
             _tcpListener.Start();
             Console.WriteLine(ipAddress.ToString() + " Started!");

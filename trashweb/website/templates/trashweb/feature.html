@@ -1,73 +1,114 @@
-{% extends "navbar.html" %}
+{% extends "navbar.html" %} {% load static %} {% block divheader %}
+<div class="row py-5">
+  <div class="col-12 pt-lg-5 mt-lg-5 text-center">
+    <h1 class="display-4 text-white animated zoomIn">Tính Năng</h1>
+    <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
+    <i class="far fa-circle text-white px-2"></i>
+    <a href="" class="h5 text-white">Tính Năng</a>
+  </div>
+</div>
+{% endblock divheader %} {% block content %}
 
-{% load static %}
-
-{% block divheader %}
-    <div class="row py-5">
-        <div class="col-12 pt-lg-5 mt-lg-5 text-center">
-            <h1 class="display-4 text-white animated zoomIn">Tính Năng</h1>
-            <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
-            <i class="far fa-circle text-white px-2"></i>
-            <a href="" class="h5 text-white">Tính Năng</a>
-        </div>
+<!-- Features Start -->
+<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+  <div class="container py-5">
+    <div
+      class="section-title text-center position-relative pb-3 mb-5 mx-auto"
+      style="max-width: 600px"
+    >
+      <h5 class="fw-bold text-success text-uppercase">
+        Lý do bạn bên sử dụng công nghệ của chúng tôi
+      </h5>
+      <h1 class="mb-0">We Are Here to Grow Your Business Exponentially</h1>
     </div>
-{% endblock divheader %}
-
-{% block content %}
-
-    <!-- Features Start -->
-    <div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
-        <div class="container py-5">
-            <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
-                <h5 class="fw-bold text-success text-uppercase">TẠI SAO CHỌN CHÚNG TÔI</h5>
-                <h1 class="mb-0">We Are Here to Grow Your Business Exponentially</h1>
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="row g-5">
+          <div class="col-12 wow zoomIn" data-wow-delay="0.2s">
+            <div
+              class="bg-success rounded d-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px"
+            >
+              <i class="fa fa-cubes text-white"></i>
             </div>
-            <div class="row g-5">
-                <div class="col-lg-4">
-                    <div class="row g-5">
-                        <div class="col-12 wow zoomIn" data-wow-delay="0.2s">
-                            <div class="bg-success rounded d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-cubes text-white"></i>
-                            </div>
-                            <h4>Best In Industry</h4>
-                            <p class="mb-0">Magna sea eos sit dolor, ipsum amet lorem diam dolor eos et diam dolor</p>
-                        </div>
-                        <div class="col-12 wow zoomIn" data-wow-delay="0.6s">
-                            <div class="bg-success rounded d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-award text-white"></i>
-                            </div>
-                            <h4>Award Winning</h4>
-                            <p class="mb-0">Magna sea eos sit dolor, ipsum amet lorem diam dolor eos et diam dolor</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4  wow zoomIn" data-wow-delay="0.9s" style="min-height: 350px;">
-                    <div class="position-relative h-100">
-                        <img class="position-absolute w-100 h-100 rounded wow zoomIn" data-wow-delay="0.1s" src="{% static 'img/feature.jpg' %}" style="object-fit: cover;">
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="row g-5">
-                        <div class="col-12 wow zoomIn" data-wow-delay="0.4s">
-                            <div class="bg-success rounded d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-users-cog text-white"></i>
-                            </div>
-                            <h4>Professional Staff</h4>
-                            <p class="mb-0">Magna sea eos sit dolor, ipsum amet lorem diam dolor eos et diam dolor</p>
-                        </div>
-                        <div class="col-12 wow zoomIn" data-wow-delay="0.8s">
-                            <div class="bg-success rounded d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
-                                <i class="fa fa-phone-alt text-white"></i>
-                            </div>
-                            <h4>24/7 Support</h4>
-                            <p class="mb-0">Magna sea eos sit dolor, ipsum amet lorem diam dolor eos et diam dolor</p>
-                        </div>
-                    </div>
-                </div>
+            <h4>Công nghệ tiên tiến</h4>
+            <p class="mb-0">
+              Chúng tôi sử dụng công nghệ hiện đại nhất để phát triển các sản
+              phẩm vứt rác thông minh. Điều này giúp tối ưu hóa quy trình thu
+              gom, xử lý và tái chế rác thải, mang lại lợi ích lớn cho môi
+              trường và cộng đồng.
+            </p>
+          </div>
+          <div class="col-12 wow zoomIn" data-wow-delay="0.6s">
+            <div
+              class="bg-success rounded d-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px"
+            >
+              <i class="fa fa-award text-white"></i>
             </div>
+            <h4>Tiết kiệm thời gian và công sức</h4>
+            <p class="mb-0">
+              Hệ thống tự động của chúng tôi giúp tiết kiệm thời gian và công
+              sức cho việc quản lý rác thải. Các sản phẩm của chúng tôi được
+              thiết kế để đơn giản hóa quy trình thu gom và giảm thiểu khó khăn
+              cho người sử dụng.
+            </p>
+          </div>
         </div>
+      </div>
+      <div
+        class="col-lg-4 wow zoomIn"
+        data-wow-delay="0.9s"
+        style="min-height: 350px"
+      >
+        <div class="position-relative h-100">
+          <img
+            class="position-absolute w-100 h-100 rounded wow zoomIn"
+            data-wow-delay="0.1s"
+            src="{% static 'img/picture/reason.jpg' %}"
+            style="object-fit: cover"
+          />
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="row g-5">
+          <div class="col-12 wow zoomIn" data-wow-delay="0.4s">
+            <div
+              class="bg-success rounded d-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px"
+            >
+              <i class="fa fa-users-cog text-white"></i>
+            </div>
+            <h4>Bảo vệ môi trường</h4>
+            <p class="mb-0">
+              Chúng tôi cam kết đóng góp vào bảo vệ môi trường bằng cách giảm
+              lượng rác thải sản sinh và thúc đẩy tái chế. Sản phẩm vứt rác
+              thông minh của chúng tôi đáp ứng các tiêu chuẩn bền vững và giúp
+              giảm tác động tiêu cực lên môi trường.
+            </p>
+          </div>
+
+          <div class="col-12 wow zoomIn" data-wow-delay="0.8s">
+            <div
+              class="bg-success rounded d-flex align-items-center justify-content-center mb-3"
+              style="width: 60px; height: 60px"
+            >
+              <i class="fa fa-phone-alt text-white"></i>
+            </div>
+            <h4>Hỗ trợ 24/7</h4>
+            <p class="mb-0">
+              Chúng tôi cam kết cung cấp hỗ trợ khách hàng liên tục 24 giờ mỗi
+              ngày, 7 ngày mỗi tuần. Đội ngũ chăm sóc khách hàng của chúng tôi
+              sẵn sàng giải đáp mọi câu hỏi, xử lý các yêu cầu và cung cấp hỗ
+              trợ kỹ thuật. Bất kể bạn gặp phải vấn đề nào, chúng tôi sẽ luôn
+              sẵn lòng giúp đỡ.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-    <!-- Features Start -->
+  </div>
+  <!-- Features Start -->
 
-
-{% endblock content %}
+  {% endblock content %}
+</div>

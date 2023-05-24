@@ -7,6 +7,10 @@ body{margin-top:20px;
     .rounded {
         border-radius: 5px !important;
     }
+    a {
+        color: #0e5423;
+        text-decoration: none;
+        }
     .py-5 {
         padding-top: 3rem !important;
         padding-bottom: 3rem !important;

@@ -149,11 +149,6 @@ class ModelTrash:
 
             if len_results != 0:
                 end_time = time.time()
-
-                print(end_time - detect_time)
-                if end_time - detect_time > 10:
-                    print("Time out!")
-                    continue
                 # Tạo ảnh trước khi lưu dữ liệu, cụ thể là sau khi detect được 1 giây
                 if end_time - detect_time > 1:
                     undetect_time = time.time()
@@ -201,7 +196,7 @@ class ModelTrash:
         cv2.destroyAllWindows()
 
     def send_server(self, imageDataAfter1Second, clsID):
-        TCP_IP = "192.168.1.59"
+        TCP_IP = "192.168.1.247"
         TCP_PORT = 5565
         count = 0
 
@@ -264,6 +259,7 @@ class ModelTrash:
 
         if response == b"Stop":
             self.data = self.reload_trash_list()
+            print("Server stopped!")
             s.close()
 
 
