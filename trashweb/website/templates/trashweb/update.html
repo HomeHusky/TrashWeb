@@ -1,60 +1,50 @@
-{% extends "navbar.html" %}
-
-{% load static %}
-
-{% block title %}
-  <title>Garbage Sorting Website</title>
-{% endblock title %}
-
-{% block divheader %}
-    <div class="row py-5">
-        <div class="col-12 pt-lg-5 mt-lg-5 text-center">
-            <h1 class="display-4 text-white animated zoomIn">Hồ Sơ Người Dùng</h1>
-            <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
-            <i class="far fa-circle text-white px-2"></i>
-            <a href="" class="h5 text-white">Hồ Sơ Người Dùng</a>
-        </div>
-    </div>
-{% endblock divheader %}
-
-    
-{% block content %}
-
-<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
-    <a class="btn btn-lg btn-success rounded" href="{% url 'user' %}">
-        <i class="bi bi-arrow-left"></i>
-    </a>
-    <div class="container py-5">
-      <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
-          <h5 class="fw-bold text-success text-uppercase">Cập Nhật Hồ Sơ</h5>
-          <h1 class="mb-0">Cập Nhật Thông Tin Của Bạn</h1>
-      </div>
-      <div class="container">
-        <div class="row">
-                <div class="col-12">
-                    <!-- Form START -->
-                    {% if submitted %}
-                        Bạn Đã Cập Nhật Thành Công!!!
-                    {% else %}
-                        <form action="" method=POST>
-                            
-                            {% csrf_token %}
-
-                            {{ form.as_p }}
-                            <br/>
-                            
-                            <input type="submit" value="Update" class="btn btn-block btn-secondary py-3 px-5">
-                        </form>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-      </div>
+{% extends "navbar.html" %} {% load static %} {% block title %}
+<title>Garbage Sorting Website</title>
+{% endblock title %} {% block divheader %}
+<div class="row py-5">
+  <div class="col-12 pt-lg-5 mt-lg-5 text-center">
+    <h1 class="display-4 text-white animated zoomIn">Hồ Sơ Người Dùng</h1>
+    <a href="{% url 'index' %}" class="h5 text-white">Trang Chủ</a>
+    <i class="far fa-circle text-white px-2"></i>
+    <a href="" class="h5 text-white">Hồ Sơ Người Dùng</a>
   </div>
 </div>
-    <link href="{% static 'css/user.css' %}" rel="stylesheet">
-{% endblock content %}
+{% endblock divheader %} {% block content %}
 
-{% block script %}
-    <script src="{% static 'js/activity.js' %}"></script>
+<div class="container-fluid py-5 wow fadeInUp" data-wow-delay="0.1s">
+  <div class="container py-5">
+    <a class="btn btn-lg btn-success rounded" href="{% url 'user' %}">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div
+      class="section-title text-center position-relative pb-3 mb-5 mx-auto"
+      style="max-width: 600px"
+    >
+      <h5 class="fw-bold text-success text-uppercase">Cập Nhật Hồ Sơ</h5>
+      <h1 class="mb-0">Cập Nhật Thông Tin Của Bạn</h1>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <!-- Form START -->
+          {% if submitted %} Bạn Đã Cập Nhật Thành Công!!! {% else %}
+          <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %} {{ form.as_p }}
+            <br />
+
+            <input
+              type="submit"
+              value="Update"
+              class="btn btn-block btn-secondary"
+            />
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<link href="{% static 'css/user.css' %}" rel="stylesheet" />
+{% endblock content %} {% block script %}
+<script src="{% static 'js/activity.js' %}"></script>
 {% endblock script %}

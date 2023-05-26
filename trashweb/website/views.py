@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from .models import (
     Customer,
     Partner,
@@ -17,7 +18,7 @@ from .models import (
     News,
     CustomerVouchers,
 )
-from .forms import CustomerForm, PasswordChangingForm, CommentForm
+from .forms import CustomerForm, PasswordChangingForm, CommentForm, UpdateImageForm
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy, reverse
@@ -35,6 +36,9 @@ import uuid
 from mypage import settings
 from django.core.mail import send_mail
 from qrcode import *
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth import update_session_auth_hash
 
 # from .camera import FacialLandMarksPosition, predict_eye_state
 
@@ -48,7 +52,7 @@ from qrcode import *
 #         'domain': current_site,
 #         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
 #         'token': generate_token.make_token(user),
-#     })
+#     }
 
 data = None
 
@@ -63,23 +67,33 @@ class VoucherView(ListView):
     template_name = "trashweb/voucher.html"
 
 
+@login_required
 def UserView(request):
     trashlists = TrashList.objects.filter(iduser_id=request.user.customer.id)
     customerVouchers = CustomerVouchers.objects.filter(
         Customer_id_id=request.user.customer.id
     )
-    partnerName = Partner.objects.all()
     context = {
         "trashlists": trashlists,
         "customerVouchers": customerVouchers,
-        "partnerName": partnerName,
     }
+    print(request.user.customer.is_email_verified)
     return render(request, "trashweb/user.html", context)
 
 
-class TrashDetailView(DetailView):
-    model = TrashDetail
-    template_name = "trashweb/trash_detail.html"
+@login_required
+def TrashDetailView(request, item_id):
+    try:
+        item = TrashDetail.objects.get(id=item_id)
+        print(item_id)
+        data = {
+            "recycle": item.recycle,
+            "dangerous": item.dangerous,
+            "othergarbage": item.othergarbage,
+        }
+        return JsonResponse(data)
+    except TrashDetail.DoesNotExist:
+        return JsonResponse({"error": "Không tìm thấy chi tiết"})
 
 
 def getValue(request):
@@ -96,10 +110,20 @@ class VoucherDetailView(DetailView):
     template_name = "trashweb/voucher_detail.html"
 
 
-class PasswordsChangeView(PasswordChangeView):
-    form_class = PasswordChangingForm
-    template_name = "trashweb/changepassword.html"
-    success_url = reverse_lazy("index")
+@login_required
+def change_password(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            message = "Thay đổi mật khẩu thành công!"
+            return render(
+                request, "trashweb/user.html", {"message": message}
+            )  # Chuyển hướng đến trang profile hoặc trang khác
+    else:
+        form = PasswordChangeForm(user=request.user)
+    return render(request, "trashweb/changepassword.html", {"form": form})
 
 
 class AddCommentView(CreateView):
@@ -115,6 +139,7 @@ class AddCommentView(CreateView):
         return super().form_valid(form)
 
 
+@login_required
 def index(request):
     num_partner = Partner.objects.count()
     num_custommer = Customer.objects.count()
@@ -180,34 +205,6 @@ def register(request):
     return render(request, "website/register.html")
 
 
-def token(request):
-    current_customer_id = request.user.customer.id
-    querysetCustomer = Customer.objects.get(id=current_customer_id)
-    token = str(uuid.uuid4())
-    querysetCustomer.auth_token = token
-    querysetCustomer.save()
-    email = querysetCustomer.Email
-    print(token, email)
-
-    send_mail_verify(email, token)
-
-    return render(request, "website/token.html")
-
-
-def success(request):
-    return render(request, "website/success.html")
-
-
-def send_mail_verify(email, token):
-    subject = "Your account needs to be verify!"
-    message = (
-        f"Hi paste the link to verify your account http://127.0.0:1800/trashweb/{token}"
-    )
-    from_email = settings.EMAIL_HOST
-    recipient_list = [email]
-    send_mail(subject, message, from_email, recipient_list)
-
-
 def loginPage(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -225,11 +222,13 @@ def loginPage(request):
     return render(request, "website/login.html")
 
 
+@login_required
 def logout_user(request):
     logout(request)
     return redirect("login1")
 
 
+@login_required
 def buy_voucher(request, pk):
     voucher_id = get_object_or_404(Voucher, id=request.POST.get("voucher_id"))
     voucher_point = voucher_id.NeededPoint
@@ -314,16 +313,41 @@ def run_another_cam(request):
     return render(request, "trashweb/index.html")
 
 
+@login_required
 def update_profile(request):
     current_customer = request.user.customer  # admin
     current_customer_id = current_customer.id  # 1
     querysetCustomer = Customer.objects.get(id=current_customer_id)
+    print(querysetCustomer.Image)
     form = CustomerForm(request.POST or None, instance=querysetCustomer)
     if form.is_valid():
-        form.save()
+        customer = form.save(commit=False)  # Lưu form nhưng chưa commit vào CSDL
+        if "Image" in request.FILES:
+            image_file = request.FILES["Image"]
+            customer.Image = image_file
+        customer.save()  # Commit vào CSDL
+        # In ra hình ảnh đã được cập nhật
+        print(customer.Image.url)
         return redirect("user")
     context = {"form": form, "customer": querysetCustomer}
     return render(request, "trashweb/update.html", context)
+
+
+@login_required
+def upload_image(request):
+    if request.method == "POST":
+        form = UpdateImageForm(
+            request.POST, request.FILES, instance=request.user.customer
+        )
+        if form.is_valid():
+            form.save()
+            return redirect(
+                "user"
+            )  # Điều hướng đến trang hồ sơ người dùng sau khi cập nhật thành công
+    else:
+        form = UpdateImageForm(instance=request.user.customer)
+
+    return render(request, "trashweb/user.html", {"form": form})
 
 
 def password_success(request):
@@ -432,6 +456,7 @@ def getdata(request):
     return JsonResponse({"vars": list(queryget.values())})
 
 
+@login_required
 def qr(request):
     global data
     if request.method == "POST":
@@ -442,3 +467,153 @@ def qr(request):
     else:
         pass
     return render(request, "trashweb/qr.html", {"data": data})
+
+
+@login_required
+def token(request):
+    user = request.user
+
+    send_mail_verify(user)
+
+    auth_token = user.customer.auth_token
+
+    context = {
+        "auth_token": auth_token,
+    }
+
+    return render(request, "website/token.html", context)
+
+
+@login_required
+def check_email_code(request):
+    try:
+        if request.method == "POST":
+            entered_code = request.POST.get("code")  # Lấy mã được nhập từ trang HTML
+            matching_code = Customer.objects.filter(auth_token=entered_code).first()
+
+            if matching_code:
+                # Mã trùng khớp, thực hiện các hành động mong muốn
+                userObject = Customer.objects.get(id=request.user.customer.id)
+                userObject.is_email_verified = True
+                userObject.save()
+                return redirect("success")
+            else:
+                # Mã không trùng khớp, xử lý tương ứng (ví dụ: hiển thị thông báo lỗi)
+                error_message = "Mã không hợp lệ. Vui lòng thử lại."
+                return render(
+                    request, "website/token.html", {"error_message": error_message}
+                )
+
+        return render(request, "website/user.html")
+    except:
+        # Mã không trùng khớp, xử lý tương ứng (ví dụ: hiển thị thông báo lỗi)
+        error_message = "Mã không hợp lệ. Vui lòng thử lại."
+        return render(request, "website/token.html", {"error_message": error_message})
+
+
+import random
+
+
+def forget_password(request):
+    return render(request, "website/forget_password.html")
+
+
+def send_code_reset(request):
+    try:
+        if request.method == "POST":
+            received_email = request.POST.get("email")
+            token = random.randint(100000, 999999)
+            userObject = Customer.objects.get(Email=received_email)
+            is_email_verified = userObject.is_email_verified
+            if is_email_verified:
+                userObject.auth_token = token
+                userObject.save()
+                subject = "MÃ QUÊN MẬT KHẨU!"
+                message = (
+                    f"Hi we are Green Ai. Here is the code get your account: {token}"
+                )
+                from_email = settings.EMAIL_HOST
+                recipient_list = [received_email]
+                send_mail(subject, message, from_email, recipient_list)
+            else:
+                error_message = "Email của bạn chưa được xác thực. Xin lỗi vì sự cố này. Bạn có thể liên hệ chúng tôi bằng số điện thoại này: 0919562182"
+                return render(
+                    request, "website/forget_password.html", {"message": error_message}
+                )
+        return render(request, "website/check_code_reset_account.html")
+
+    except:
+        error_message = "Email không hợp lệ. Vui lòng thử lại."
+        return render(
+            request, "website/forget_password.html", {"message": error_message}
+        )
+
+
+def check_code_reset_account(request):
+    try:
+        if request.method == "POST":
+            entered_code = request.POST.get("code")  # Lấy mã được nhập từ trang HTML
+            matching_code = Customer.objects.filter(auth_token=entered_code).first()
+
+            if matching_code:
+                # Mã trùng khớp, thực hiện các hành động mong muốn
+                userObject = Customer.objects.get(auth_token=entered_code)
+                print(userObject.User.id)
+                currenUser = User.objects.get(id=userObject.User.id)
+                # currentUser = User.objects.get(id=userObject.User)
+                message = "Mã hợp lệ. Hãy chọn mật khẩu mới!"
+                if currenUser is not None:
+                    login(request, currenUser)
+                    current_user = request.user
+                    current_id = current_user.id
+                    print(current_id)
+                    return redirect("change_password_without_old")
+                return render(request, "website/login.html", {"message": message})
+            else:
+                # Mã không trùng khớp, xử lý tương ứng (ví dụ: hiển thị thông báo lỗi)
+                error_message = "Mã không hợp lệ. Vui lòng thử lại."
+                return render(
+                    request,
+                    "website/check_code_reset_account.html",
+                    {"message": error_message},
+                )
+
+        return render(request, "website/user.html")
+    except:
+        # Mã không trùng khớp, xử lý tương ứng (ví dụ: hiển thị thông báo lỗi)
+        error_message = "Mã không hợp lệ. Vui lòng thử lại."
+        return render(
+            request, "website/check_code_reset_account.html", {"message": error_message}
+        )
+
+
+@login_required
+def change_password_without_old(request):
+    if request.method == "POST":
+        form = SetPasswordForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            return redirect("index")  # Chuyển hướng đến trang profile hoặc trang khác
+    else:
+        form = SetPasswordForm(user=request.user)
+    return render(request, "website/change_password_without_old.html", {"form": form})
+
+
+@login_required
+def success(request):
+    return render(request, "website/success.html")
+
+
+def send_mail_verify(user):
+    email = user.customer.Email
+    token = random.randint(100000, 999999)
+    userObject = Customer.objects.get(id=user.customer.id)
+    userObject.auth_token = token
+    userObject.save()
+    subject = "Your account needs to be verify!"
+    message = f"Hi we are Green Ai. Here is the code to verify your account: {token}"
+    from_email = settings.EMAIL_HOST
+    recipient_list = [email]
+    send_mail(subject, message, from_email, recipient_list)
+    return token

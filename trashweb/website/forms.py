@@ -9,12 +9,13 @@ from django.contrib.auth.forms import PasswordChangeForm
 class CustomerForm(ModelForm):
     class Meta:
         model = Customer
-        fields = ("Name", "Image", "Phone", "Email")
+        fields = ("Name", "Image", "Phone", "Email", "Address")
         labels = {
             "Name": "Enter your Name Here",
-            "Image": "",
-            "Phone": "",
-            "Email": "",
+            "Image": "Choose your Image Here",
+            "Phone": "Enter your Phone Number Here",
+            "Email": "Enter your Email Here",
+            "Address": "Enter your Address Here",
         }
         widgets = {
             "Name": forms.TextInput(
@@ -26,7 +27,25 @@ class CustomerForm(ModelForm):
             "Email": forms.EmailInput(
                 attrs={"class": "form-control", "placeholder": " Enter Your Email Here"}
             ),
+            "Address": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": " Enter Your Address Here",
+                }
+            ),
         }
+        error_messages = {
+            "Name": {
+                "required": "Name is required",
+                "min_length": "Name must be at least 3 characters long",
+            },
+        }
+
+
+class UpdateImageForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ["Image"]
 
 
 class PasswordChangingForm(PasswordChangeForm):

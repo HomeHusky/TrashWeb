@@ -68,7 +68,9 @@ class Voucher(models.Model):
 class Customer(models.Model):
     User = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     id = models.CharField(max_length=9, primary_key=True, unique=True, editable=False)
-    Image = models.ImageField(default="default.jpg", upload_to="profile_pics/")
+    Image = models.ImageField(
+        default="default.jpg", upload_to="avatars/", null=True, blank=True
+    )
     Name = models.CharField(max_length=200, null=True)
     Phone = models.CharField(max_length=200, null=True)
     Email = models.CharField(max_length=200, null=True)
@@ -79,7 +81,7 @@ class Customer(models.Model):
     point = models.FloatField(max_length=200, default=0)
     Address = models.CharField(max_length=200, null=True)
     DataCreated = models.DateTimeField(auto_now_add=True, null=True)
-    auth_token = models.UUIDField(default=uuid.uuid4, editable=False)
+    auth_token = models.IntegerField(null=True, editable=False)
 
     def __str__(self):
         return str(self.Name)
@@ -88,7 +90,7 @@ class Customer(models.Model):
         if not self.id:
             # generate user id with first two letters of username and 7 random digits
             random_digits = random.randint(1000, 9999)
-            self.id = self.Name[:2].upper() + str(random_digits)
+            self.id = str(random_digits)
         super(Customer, self).save(*args, **kwargs)
 
 

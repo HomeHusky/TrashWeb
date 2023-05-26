@@ -2,9 +2,33 @@
 
 {% load static %}
 
-{% block title %}
-  <title>Smart Trash - Waste Treatment Company</title>
-{% endblock title %}
+{% block style %} 
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function getDetails(itemId) {
+    fetch(`/trashweb/user/${itemId}/`) // Gửi yêu cầu GET với id của hàng
+      .then(response => response.json()) // Chuyển đổi phản hồi thành JSON
+      .then(data => {
+        const detailContainer = document.getElementById(`detail-container-${itemId}`);
+        console.log(data);
+        jsondata = JSON.stringify(data);
+        newdata = JSON.parse(jsondata);
+        const recycleValue = data.recycle;
+        const dangerousValue = data.dangerous;
+        const otherGarbageValue = data.othergarbage;
+        console.log(recycleValue); // Output: 1
+        console.log(dangerousValue); // Output: 0
+        console.log(otherGarbageValue); // Output: 0
+        detailContainer.innerHTML = "Rác tái chế: " + recycleValue + ", Rác nguy hiểm: " + dangerousValue + ", Loại khác: " + otherGarbageValue; // Hiển thị dữ liệu JSON trong phần tử div
+      })
+      .catch(error => {
+        console.error('Lỗi khi lấy chi tiết:', error);
+      });
+  }
+    
+  </script>
+{% endblock style %}
 
 {% block divheader %}
     <div class="row py-5">
@@ -25,6 +49,9 @@
       <div class="section-title text-center position-relative pb-3 mb-5 mx-auto" style="max-width: 600px;">
           <h5 class="fw-bold text-success text-uppercase">Chi Tiết Người Dùng</h5>
           <h1 class="mb-0">Thông Tin Và Hồ Sơ Của Bạn</h1>
+          {% if message %}
+            <h5>{{message}}</h5>
+          {% endif %}
       </div>
       
       <div class="container py-5">
@@ -34,14 +61,11 @@
               <div class="card-body text-center">
                 <img src="{{user.customer.Image.url}}" alt="avatar"
                   class="rounded-circle img-fluid" style="width: 150px;">
+                  
+                
                 <h5 class="my-3">{{user.customer.Name}}</h5>
-                <p class="text-muted mb-1">User</p>
                 <p class="text-muted mb-4">{{current_address}}</p>
-                <div class="d-flex justify-content-center mb-2">
-                  <a href="{% url 'voucher' %}" type="button" class="btn btn-success">Trao Đổi Quà</a>
-                  <a href="{% url 'update' %}" type="button" class="btn btn-outline-success ms-1">Chỉnh Sửa Hồ Sơ</a>
-                  <a href="{% url 'qr' %}" type="button" class="btn btn-outline-success ms-1">Lấy Mã QR Của Bạn</a>
-                </div>
+                
               </div>
             </div>
             <div class="card mb-4 mb-lg-0">
@@ -63,6 +87,13 @@
               </div>
             </div>
             </br>
+            {% comment %} <div id="detail-container">
+              <h3>Chi tiết về rác:</h3>
+              <p><strong>Recycle:</strong> <span id="detail-recycle"></span></p>
+              <p><strong>Dangerous:</strong> <span id="detail-dangerous"></span></p>
+              <p><strong>Other:</strong> <span id="detail-other"></span></p>
+            </div>
+            </br> {% endcomment %}
             <h2 class="text-center">Voucher Hiện Có</h2>
             <div class="card mb-4 mb-lg-0">
               <div class="card-body p-0">
@@ -77,7 +108,9 @@
                   <tbody>
                     {% for list in customerVouchers %}
                     <tr>
-                      <td scope="row">{{list.Voucher_id_id}}</td>
+                      <td scope="row"> 
+                        {{list.Voucher_id.author}}
+                      </td>
                       <td scope="row">{{list.GenerateCode}}</td>
                     </tr>
                     {% endfor %}
@@ -85,6 +118,7 @@
                 </table>
               </div>
             </div>
+            
           </div>
           <div class="col-lg-7">
             <div class="card mb-4">
@@ -114,9 +148,15 @@
                   <div class="col-sm-6">
                     <p class="text-muted mb-0">{{user.customer.Email}}</p>
                   </div>
+                  {% if user.customer.is_email_verified == False%}
                   <div class="col-sm-3">
                     <a href="{% url 'token' %}" type="button" class="btn btn-success btn-sm">Verify</a>
                   </div>
+                  {% else %}
+                  <div class="col-sm-3">
+                    <a>Verified</a>
+                  </div>
+                  {% endif %}
                 </div>
                 <hr>
                 <div class="row">
@@ -145,38 +185,44 @@
                     <p class="text-muted mb-0">{{user.customer.Address}}</p>
                   </div>
                 </div>
+                <hr>
+                <div class="d-flex justify-content mb-2">
+                  <a href="{% url 'voucher' %}" type="button" class="btn btn-success">Đổi Quà</a>
+                  <a href="{% url 'update' %}" type="button" class="btn btn-outline-success ms-1">Chỉnh Sửa</a>
+                </div>
               </div>
             </div>
             <div class="row">
-              <h1 class="text-center">Hoạt Động Vứt Rác</h1>
+              <h1 class="text-center">Lịch Sử Vứt Rác</h1>
               <div class="col-md-12">
                 <div class="card mb-4 mb-md-0">
                   <div class="card-body">
                       <table class="table">
-                          <thead>
-                            <tr>
-                              <th scope="col">Ngày Vứt Rác</th>
-                              <th scope="col">Số Loại</th>
-                              <th scope="col">Tổng Điểm</th>
-                              <th scope="col"></th>
-                            </tr>
-                          </thead>
-                          
-                          <tbody>
-                            {% for list in trashlists %}
-                            <tr>
-                              <td scope="row">{{list.createat}}</td>
-                              <td scope="row">{{list.numoftrash}}</td>
-                              <td scope="row">{{list.totalscore}}</td>
-                              <td scope="row">
-                                <a href="{% url 'trash_detail' list.pk %}" type="button" class="btn btn-success btn-sm">Chi tiết</a>
-                              </td>
-                            </tr>
-                            {% endfor %}
-                          </tbody>
-                          
-                          
-                        </table>
+                        <thead>
+                          <tr>
+                            <th scope="col">Ngày Vứt Rác</th>
+                            <th scope="col">Số Loại</th>
+                            <th scope="col">Tổng Điểm</th>
+                            <th scope="col"></th>
+                          </tr>
+                        </thead>
+                        
+                        <tbody>
+                          {% for list in trashlists %}
+                          <tr>
+                            <td scope="row">{{list.createat}}</td>
+                            <td scope="row">{{list.numoftrash}}</td>
+                            <td scope="row">{{list.totalscore}}</td>
+                            <td scope="row">
+                              {% csrf_token %}
+                              <button type="button" class="btn btn-success btn-sm btn-chi-tiet" data-id="{{list.pk}}" onclick="getDetails({{list.pk}})">Chi tiết</button>
+                              <div id="detail-container-{{list.pk}}"></div> <!-- Phần tử HTML để hiển thị chi tiết -->
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                        
                     </div>
                   </div>
                 </div>
@@ -186,9 +232,9 @@
         </div>
   </div>
   </div>
-    <link href="{% static 'css/user.css' %}" rel="stylesheet">
 {% endblock content %}
 
 {% block script %}
-    <script src="{% static 'js/activity.js' %}"></script>
+  <script src="{% static 'js/activity.js' %}"></script>
+  
 {% endblock script %}

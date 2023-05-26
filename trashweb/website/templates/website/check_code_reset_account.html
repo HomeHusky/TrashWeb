@@ -1,10 +1,10 @@
-{% extends "navbar.html" %} {% load static %} {% block title %}
+{% extends "registration.html" %} {% load static %} {% block title %}
 <title>Smart Trash - Waste Treatment Company</title>
 {% endblock title %} {% block divheader %}
 <div class="row py-5">
   <div class="col-12 pt-lg-5 mt-lg-5 text-center">
-    {% if error_message %}
-    <h1 class="display-4 text-white animated zoomIn">{{error_message}}</h1>
+    {% if message %}
+    <h1 class="display-4 text-white animated zoomIn">{{message}}</h1>
     {% else %}
     <h1 class="display-4 text-white animated zoomIn">
       Chúng tôi đã gửi email cho bạn!
@@ -16,16 +16,11 @@
 
     <br />
     <br />
-    <form method="POST" action="{% url 'check_email_code' %}">
+    <form method="POST" action="{% url 'check_code_reset_account' %}">
       {% csrf_token %}
       <input type="text" name="code" placeholder="Nhập mã vào đây" />
       <button class="btn btn-success" type="submit">Xác nhận</button>
     </form>
-    <br />
-    <br />
-    <a href="{% url 'token' %}" class="btn btn-success py-2 px-4 ms-3"
-      >Gửi lại</a
-    >
   </div>
 </div>
 

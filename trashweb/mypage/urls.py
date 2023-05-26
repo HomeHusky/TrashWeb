@@ -24,19 +24,17 @@ from django.contrib.auth.models import User
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('register/', website_views.register, name='register'),
+    path("admin/", admin.site.urls),
+    path("register/", website_views.register, name="register"),
     path("", include("website.urls")),
     path("trashweb/", include("website.urls")),
-    path('trashweb/', include('django.contrib.auth.urls')),
-    path('send', website_views.qr)
-
-
+    path("trashweb/", include("django.contrib.auth.urls")),
+    path("send", website_views.qr),
 ]
 
-#Configure Admin Titles
+# Configure Admin Titles
 admin.site.site_header = "Trash Web Administractic"
 admin.site.site_title = "TrashWeb"
 admin.site.index_title = "Welcom To The AdminSite!"
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
