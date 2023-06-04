@@ -137,8 +137,8 @@ namespace trashwebWinForm
             _isListening = true;
 
             //Khởi tạo TcpListener lắng nghe kết nối từ client
-            IPAddress ipAddress = IPAddress.Parse(getIdAdress());
-            //IPAddress ipAddress = IPAddress.Parse("172.21.0.164");
+            //IPAddress ipAddress = IPAddress.Parse(getIdAdress());
+            IPAddress ipAddress = IPAddress.Parse("172.20.46.128");
 
             _tcpListener = new TcpListener(ipAddress, 5565);
             _tcpListener.Start();
